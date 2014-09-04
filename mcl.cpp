@@ -53,7 +53,7 @@ int main()
     {
     	pos = pos + m;
 	    locator([&maze, pos](auto p){
-	    			return weight_function(maze.measure_from(pos), 
+	    			return mcl::weight_function(maze.measure_from(pos), 
 	    								   maze.measure_from(p));}, 
 	    		[m](auto p){return p + m;});    	      
 

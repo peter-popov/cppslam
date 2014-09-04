@@ -8,3 +8,5 @@ add_definitions(-std=c++1y)
 project (mcl_test)
 
 add_executable(mcl_test mcl.cpp)
+
+add_subdirectory(samples/pfdemo)
