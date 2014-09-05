@@ -8,7 +8,6 @@
 #include <QGraphicsView>
 #include <memory>
 
-
 class MainWindow : public QWidget
 {
     Q_OBJECT

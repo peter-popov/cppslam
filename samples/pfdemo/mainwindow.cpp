@@ -6,6 +6,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 
+
 #include "../../mazeworld.hpp"
 #include "../../mcl.hpp"
 
@@ -16,7 +17,7 @@ struct MainWindow::PrivateData
     std::vector<mazeworld::Movement> path;
     mazeworld::Position start_pos;
     size_t step;
-    mcl::MCL<mazeworld::Position> mcl;
+    mcl::MCL<mazeworld::Position> mcl;    
 };
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -92,9 +93,12 @@ void MainWindow::TimerEvent()
 
 void MainWindow::DoStep()
 {
+    
+
+
     auto m = d->path[d->step];
     d->start_pos = d->start_pos + m;
-    d->mcl([&](mazeworld::Position p){ return mcl::weight_function(d->maze.measure_from(d->start_pos),
+    d->mcl([&](mazeworld::Position p){ return mcl::weight_function(d->maze.measure_from(d->start_pos, true),
                                                     d->maze.measure_from(p));},
            [m](mazeworld::Position p){return p + m;});
 
