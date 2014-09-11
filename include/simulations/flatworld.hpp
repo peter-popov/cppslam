@@ -1,18 +1,21 @@
 #pragma once
 
 #include <boost/geometry.hpp>
+#include <boost/geometry/index/rtree.hpp>
 #include <utility>
 
 namespace flatworld
 {
 
 namespace bg = boost::geometry;
+namespace bgi = boost::geometry::index;
 
 typedef double Coord;
 typedef bg::model::point<Coord, 2, bg::cs::cartesian> Point;
 typedef bg::model::box<Point> Box;
 typedef bg::model::polygon<Point> Polygon;
 typedef bg::model::linestring<Point> Segment;
+typedef std::pair<Box, size_t> IndexItem;
 
 auto move_point(const Point& p, const Point& m)
 {
@@ -39,9 +42,8 @@ public:
 		Box tmp;
 		bg::envelope(m_objects.back(), tmp);
 		bg::expand(m_bbox, tmp);
+		rtree.insert(std::make_pair(tmp, m_objects.size()-1));
 	}	
-
-
 
 
 	auto& objects() const {return m_objects;}
@@ -111,10 +113,14 @@ public:
 		bg::append(ray, p);
 		bg::append(ray, end);
 
+		std::vector<IndexItem> query_result;
+		rtree.query(bgi::intersects(Box{p, end}), std::back_inserter(query_result));
+
 		auto min_dist = max_length;
 		touch_point = p;
-		for (auto& poly: m_objects)
+		for (auto& idx: query_result)
 		{
+			auto& poly = m_objects[idx.second];
 			Segment res;
 			bg::intersection(poly, ray, res);
 			for (auto& pt: res)
@@ -134,6 +140,7 @@ public:
 
 private:
 	std::vector<Polygon> m_objects;	 
+	bgi::rtree< IndexItem, bgi::quadratic<16> > rtree;
 	Box m_bbox;
 };	
 

@@ -147,7 +147,7 @@ struct MainWindow::PrivateData
         }
 
         std::vector<decltype(flat_scene.random_state())> states;
-        for (int i = 0; i < 5000; ++i)
+        for (int i = 0; i < 1000; ++i)
         {
             auto p = flat_scene.random_state();
             if (!flat_scene.empty(p))
@@ -193,8 +193,6 @@ struct MainWindow::PrivateData
         }
     }
 };
-
-
 
 
 
