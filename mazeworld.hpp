@@ -140,8 +140,6 @@ generate_maze(size_t w, size_t h)
 
 	std::srand ( unsigned ( std::time(0) ) );
 
-	Position pos{0, 0};
-
 	std::vector<Movement> moves{{0,-1}, {-1,0}, {0,1}, {1,0}};
 	std::vector<Movement> surr{{-1,-1}, {-1,0}, {-1,1}, 
 					          {0,-1},          {0, 1},
