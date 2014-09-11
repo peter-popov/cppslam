@@ -3,6 +3,8 @@
 #include <vector>
 #include <random>
 
+#include "resample.hpp"
+
 using namespace std;
 
 namespace mcl
@@ -33,29 +35,6 @@ void scale(std::vector<Particle<S>>& v)
     for(auto& p: v) p.weight = p.weight / max;
 }
 
-
-
-template<typename S>
-std::vector<Particle<S>> resample(std::vector<Particle<S>>& v)
-{
-	vector<double> acc;
-	for(auto& p: v) acc.push_back(p.weight);
-	for (int i = 1; i < acc.size(); ++i) acc[i] += acc[i-1];
-
-	std::uniform_real_distribution<double> unif(0., acc.back());
-	std::default_random_engine re{std::random_device{}()};      
-  
- 	vector<Particle<S>> res;
- 	for (int i = 0; i < acc.size(); ++i)
-	{
-		double r = unif(re);
-		int idx = 0;
-		for (; idx < acc.size( ); ++idx)
-			if (acc[idx] >= r) break;
-		res.push_back(v[idx]);
-	}	
-	return res;	
-}
 
 
 template<typename T>

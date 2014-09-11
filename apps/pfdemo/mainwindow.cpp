@@ -190,6 +190,9 @@ struct MainWindow::PrivateData
             auto qp = to_q_point(particles[i].state);
             particle_markers[i]->setRect(QRectF(qp.x() - 3, qp.y() - 3, 6, 6));
         }
+
+        // std::cout << "Intersections: " << flat_scene.num_intersections << std::endl;
+        // flat_scene.num_intersections = 0;
     }
 };
 

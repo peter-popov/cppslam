@@ -1,6 +1,6 @@
+#define BOOST_TEST_MODULE "flatworld tests"
+
 #include <simulations/flatworld.hpp>
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE "FlatWorldTest"
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( test_sensor_simple )
@@ -23,7 +23,8 @@ BOOST_AUTO_TEST_CASE( test_sensor_simple )
 
 	auto r = scene.measure_from({5.0, 5.0});
 	int a = flatworld::Scene::num_rays;
+
 	BOOST_CHECK_EQUAL(r.size(), a);
 	BOOST_CHECK_EQUAL(r[0], 4.0);
-	BOOST_CHECK_EQUAL(r[2], 4.0);
+	BOOST_CHECK_EQUAL(r[2], 500.0);
 }

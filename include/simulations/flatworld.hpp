@@ -27,7 +27,8 @@ auto move_point(const Point& p, const Point& m)
 class Scene
 {
 public:
-	static const int num_rays = 6;
+	static const int num_rays = 4;
+	mutable size_t num_intersections = 0;
 
 public:
 
@@ -87,7 +88,6 @@ public:
 			Point touch_point;
 			res[i] = calculate_distance(p, 0 + i*da, touch_point);
 		}
-		std::sort(res.begin(), res.end());
 		return res;
 	}
 
@@ -105,9 +105,9 @@ public:
 
 	double calculate_distance(Point p, double heading, Point& touch_point) const
 	{
-		static double max_length = 1000;		
+		static double max_range = 500;		
 		auto end = Point{cos(heading), sin(heading)};
-		bg::multiply_value(end, max_length);
+		bg::multiply_value(end, max_range);
 		bg::add_point(end, p);
 
 		Segment ray;
@@ -116,14 +116,15 @@ public:
 
 		std::vector<IndexItem> query_result;
 		rtree.query(bgi::intersects(Box{p, end}), std::back_inserter(query_result));
-
-		auto min_dist = max_length;
+		
+		auto min_dist = max_range;
 		touch_point = p;
 		for (auto& idx: query_result)
 		{
 			auto& poly = m_objects[idx.second];
 			Segment res;
 			bg::intersection(poly, ray, res);
+			num_intersections++;
 			for (auto& pt: res)
 			{
 				auto dist = bg::distance(p, pt);
