@@ -83,7 +83,7 @@ struct MCL
 		}
 
 		normilize(particles);
-		particles = resample(particles);
+		particles = systematic_resample(particles);
 	}
 
 	vector<Particle<State>> particles;		
