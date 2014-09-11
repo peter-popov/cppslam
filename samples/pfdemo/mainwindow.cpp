@@ -4,6 +4,7 @@
 #include "../../mazeworld.hpp"
 #include "../../flatworld.hpp"
 #include "../../mcl.hpp"
+#include "../../utils.hpp"
 
 
 struct /*MainWindow::*/PrivateDataMaze
@@ -113,6 +114,14 @@ struct MainWindow::PrivateData
     QGraphicsEllipseItem* position_marker;
     std::vector<QGraphicsLineItem*> rays_markers;
 
+    mcl::GaussianNoise<double> movement_noise;
+
+    PrivateData()
+    : movement_noise(5)
+    {
+
+    }
+
     template<typename T>
     QPointF to_q_point(const T& x)
     {
@@ -167,7 +176,7 @@ struct MainWindow::PrivateData
         start_pos = flatworld::move_point(start_pos, m);        
         mcl([&](auto p){ return mcl::weight_function(flat_scene.measure_from(start_pos),
                                                      flat_scene.measure_from(p));},
-            [m](auto p){ return flatworld::move_point(p, m);});
+            [&](auto p){ return flatworld::move_point(flatworld::move_point(p, m), {movement_noise(), movement_noise()});});
 
         step++;
 
