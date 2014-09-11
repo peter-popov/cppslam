@@ -14,7 +14,7 @@ typedef double Coord;
 typedef bg::model::point<Coord, 2, bg::cs::cartesian> Point;
 typedef bg::model::box<Point> Box;
 typedef bg::model::polygon<Point> Polygon;
-typedef bg::model::linestring<Point> Segment;
+typedef bg::model::segment<Point> Segment;
 typedef std::pair<Box, size_t> IndexItem;
 
 auto move_point(const Point& p, const Point& m)
@@ -43,7 +43,19 @@ public:
 		Box tmp;
 		bg::envelope(m_objects.back(), tmp);
 		bg::expand(m_bbox, tmp);
-		rtree.insert(std::make_pair(tmp, m_objects.size()-1));
+
+		auto ring = bg::exterior_ring(m_objects.back());
+		auto next_pos = bg::closing_iterator<decltype(ring)>(ring);
+
+		for(auto& v: ring)
+		{
+			auto next_v = *++next_pos;			
+			m_segments.emplace_back(v, next_v);
+			Box sbb;
+			bg::envelope(m_segments.back(), sbb);
+
+			rtree.insert(std::make_pair(sbb, m_segments.size()-1));			
+		}		
 	}	
 
 
@@ -110,39 +122,41 @@ public:
 		bg::multiply_value(end, max_range);
 		bg::add_point(end, p);
 
-		Segment ray;
-		bg::append(ray, p);
-		bg::append(ray, end);
+		Segment ray{p, end};
 
-		std::vector<IndexItem> query_result;
+		query_result.resize(0);
 		rtree.query(bgi::intersects(Box{p, end}), std::back_inserter(query_result));
 		
 		auto min_dist = max_range;
 		touch_point = p;
+		intersection_result.resize(0);
 		for (auto& idx: query_result)
 		{
-			auto& poly = m_objects[idx.second];
-			Segment res;
-			bg::intersection(poly, ray, res);
-			num_intersections++;
-			for (auto& pt: res)
-			{
-				auto dist = bg::distance(p, pt);
-				if (min_dist > dist)
-				{
-					min_dist = dist;
-					touch_point = pt;
-				}
-			}
-					
+			auto& segm = m_segments[idx.second];			
+			bg::intersection(segm, ray, intersection_result);
+			num_intersections++;					
 		}
+
+		for (auto& pt: intersection_result)
+		{
+			auto dist = bg::distance(p, pt);
+			if (min_dist > dist)
+			{
+				min_dist = dist;
+				touch_point = pt;
+			}
+		}
+
 		return min_dist;
 	}
 
 
 private:
 	std::vector<Polygon> m_objects;	 
-	bgi::rtree< IndexItem, bgi::quadratic<16> > rtree;
+	std::vector<Segment> m_segments;
+	bgi::rtree< IndexItem, bgi::quadratic<4> > rtree;
+	mutable std::vector<IndexItem> query_result;
+	mutable std::vector<Point> intersection_result;
 	Box m_bbox;
 };	
 

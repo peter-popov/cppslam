@@ -4,6 +4,7 @@ project(pfcpp)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
+#set(CMAKE_BUILD_TYPE Debug)
 
 find_package(Qt5Widgets)
 
