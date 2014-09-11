@@ -16,14 +16,16 @@
 	        [
 	        	"-std=c++1y",
 	        	"-I/usr/include/qt5",
-	        	"-I/usr/include/qt5/QtWidgets"
+	        	"-I/usr/include/qt5/QtWidgets",
+	        	"-I${project_path}/include"
 	        ]
     	},
 
     	"sublimeclang_options":
 		[			
 			"-ferror-limit=10",
-			"-fPIC"
+			"-fPIC",
+	        "-I${project_path}/include"
 		]
     }	
 }

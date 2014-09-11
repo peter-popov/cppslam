@@ -1,10 +1,10 @@
 #include <QtWidgets>
 #include "mainwindow.hpp"
 
-#include "../../mazeworld.hpp"
-#include "../../flatworld.hpp"
-#include "../../mcl.hpp"
-#include "../../utils.hpp"
+#include <simulations/mazeworld.hpp>
+#include <simulations/flatworld.hpp>
+#include <pfcpp/mcl.hpp>
+#include <pfcpp/utils.hpp>
 
 
 struct /*MainWindow::*/PrivateDataMaze
