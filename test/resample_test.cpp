@@ -1,7 +1,7 @@
-#define BOOST_TEST_MODULE "resample tests"
-#define BOOST_TEST_DYN_LINK
 #include <pfcpp/resample.hpp>
 #include <boost/test/unit_test.hpp>
+
+BOOST_AUTO_TEST_SUITE(resampling)
 
 BOOST_AUTO_TEST_CASE( test_resample_weight_member )
 {
@@ -31,3 +31,5 @@ BOOST_AUTO_TEST_CASE( test_resample_custom )
 
 	auto resampled = mcl::resample(particles);
 }
+
+BOOST_AUTO_TEST_SUITE_END()

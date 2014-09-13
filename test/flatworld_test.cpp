@@ -1,7 +1,7 @@
-#define BOOST_TEST_MODULE "flatworld tests"
-
 #include <simulations/flatworld.hpp>
 #include <boost/test/unit_test.hpp>
+
+BOOST_AUTO_TEST_SUITE(flatworld_simulation)
 
 BOOST_AUTO_TEST_CASE( test_sensor_simple )
 {
@@ -28,3 +28,5 @@ BOOST_AUTO_TEST_CASE( test_sensor_simple )
 	BOOST_CHECK_EQUAL(r[0], 4.0);
 	BOOST_CHECK_EQUAL(r[2], 500.0);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
