@@ -6,8 +6,8 @@
 #include <pfcpp/mcl.hpp>
 #include <pfcpp/utils.hpp>
 
-
-struct /*MainWindow::*/PrivateDataMaze
+/*
+struct MainWindow::PrivateDataMaze
 {
     mazeworld::Maze maze;
     std::vector<mazeworld::Movement> path;
@@ -98,42 +98,60 @@ struct /*MainWindow::*/PrivateDataMaze
     }
 
 };
-
+*/
 
 
 
 struct MainWindow::PrivateData
 {
+
+    struct Control
+    {
+        double v;
+        double w;    
+    };
+
     flatworld::Scene flat_scene;
-    std::vector<flatworld::Point> path;
-    flatworld::Point start_pos;
+    std::vector<Control> path;
+    flatworld::Pose start_pos;
     size_t step;
-    mcl::MCL<flatworld::Point> mcl;
+    mcl::MCL<flatworld::Pose> mcl;
+
+
 
     std::vector<QGraphicsEllipseItem*> particle_markers;
+    std::vector<QGraphicsLineItem*> particle_markers_dir;
+    
     QGraphicsEllipseItem* position_marker;
     std::vector<QGraphicsLineItem*> rays_markers;
 
-    mcl::GaussianNoise<double> movement_noise;
-
+    mcl::VelocityMotionModelSampler movement_model;
+    
     PrivateData()
-    : movement_noise(5)
     {
 
     }
 
-    template<typename T>
-    QPointF to_q_point(const T& x)
+    QPointF to_q_point(const flatworld::Point& x)
     {
         return {boost::geometry::get<0>(x), -boost::geometry::get<1>(x)};
     }
 
+    QPointF to_q_point(const flatworld::Pose& p)
+    {
+        return {p.x, -p.y};
+    }
+
+
     void init_scene(QGraphicsScene& scene, QGraphicsView& view)
     {
-        start_pos = {-640, -350};
-        path = {{0, 50},{0, 50},{0, 50},{0, 50},{0, 50},{0, 50},{0, 50},
-                {50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},
-                {0, 50},{0, 50},{0, 50},{0, 50},{0, 50},{0, 50},{0, 50}};
+        start_pos = {-640, -350, 1.570796};
+        path = {{50, 0},
+                {50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},
+                {50, -1.570796},
+                {50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},
+                {50, 1.570796},
+                {50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0}};
         flat_scene = flatworld::generate_scene();
         step = 0;
         scene.clear();        
@@ -147,16 +165,16 @@ struct MainWindow::PrivateData
         }
 
         std::vector<decltype(flat_scene.random_state())> states;
-        for (int i = 0; i < 3000; ++i)
+        for (int i = 0; i < 2000; ++i)
         {
             auto p = flat_scene.random_state();
-            if (!flat_scene.empty(p))
+            if (!flat_scene.empty({p.x,p.y}))
                 continue;
             states.push_back(p);
         }
 
 
-        mcl = mcl::MCL<flatworld::Point>(states);
+        mcl = mcl::MCL<flatworld::Pose>(states, {{0.05,0.5,0.002,0.1,0.0,0.0}});
 
         for (auto& p: states)
         {
@@ -164,6 +182,17 @@ struct MainWindow::PrivateData
             particle_markers.push_back(scene.addEllipse(QRectF(qp.x() - 3, qp.y() - 3, 6, 6),
                                                         QPen(QColor(0,0,255,60)),
                                                         QBrush(QColor(0,0,255,60))));
+
+            auto qp_e = to_q_point(flatworld::Point{p.x + 10*cos(p.direction), p.y + 10*sin(p.direction)});
+            particle_markers_dir.push_back(scene.addLine(QLineF(qp, qp_e),
+                                                     QPen(QColor(0,0,255,60))));
+        }
+
+        auto sense_points = flat_scene.sense_points(start_pos);
+        for (size_t i = 0; i < sense_points.size(); ++i)
+        {
+            rays_markers.push_back(scene.addLine(QLineF(to_q_point(start_pos), to_q_point(sense_points[i])),
+                                            QPen(QColor(0,255,0,130), 2, Qt::DotLine)));
         }
 
         view.fitInView(scene.sceneRect());     
@@ -171,11 +200,18 @@ struct MainWindow::PrivateData
 
     void update_view(QGraphicsScene& scene)
     {
+
         auto m = path[step];
-        start_pos = flatworld::move_point(start_pos, m);        
+        start_pos = movement_model(start_pos, m);        
         mcl([&](auto p){ return mcl::weight_function(flat_scene.measure_from(start_pos),
                                                      flat_scene.measure_from(p));},
-            [&](auto p){ return flatworld::move_point(flatworld::move_point(p, m), {movement_noise(), movement_noise()});});
+            m);
+
+        auto sense_points = flat_scene.sense_points(start_pos);
+        for (size_t i = 0; i < sense_points.size() && i < rays_markers.size(); ++i)
+        {
+            rays_markers[i]->setLine(QLineF(to_q_point(start_pos), to_q_point(sense_points[i])));
+        }
 
         step++;
 
@@ -186,9 +222,13 @@ struct MainWindow::PrivateData
 
         auto particles = mcl.particles;
         for (size_t i = 0; i < particle_markers.size() && particles.size(); ++i)
-        {
-            auto qp = to_q_point(particles[i].state);
+        {                
+            auto ps = particles[i].state;
+            auto qp = to_q_point(ps);
             particle_markers[i]->setRect(QRectF(qp.x() - 3, qp.y() - 3, 6, 6));
+            auto qp_e = to_q_point(flatworld::Point{ps.x + 10*cos(ps.direction), ps.y + 10*sin(ps.direction)});
+        
+            particle_markers_dir[i]->setLine(QLineF(qp, qp_e));
         }
 
         std::cout << "Intersections: " << flat_scene.num_intersections << std::endl;

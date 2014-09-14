@@ -4,6 +4,7 @@
 #include <random>
 
 #include "resample.hpp"
+#include "motion.hpp"
 
 using namespace std;
 
@@ -52,11 +53,12 @@ double weight_function(vector<T> expected, vector<T> measured)
 }
 
 
-template<typename State>
+template<typename State, typename MotionModel = VelocityMotionModelSampler>
 struct MCL
 {
 	MCL() {}
-	MCL(vector<State> states)
+	MCL(vector<State> states, const MotionModel& model)
+	: motion_model(model)
 	{
 		for (auto& s: states)
 		{
@@ -73,19 +75,20 @@ struct MCL
 		}
 	}
 
-	template<typename Measurment, typename Action>
-	void operator()(Measurment measurment, Action action)
+	template<typename Measurment, typename Control>
+	void operator()(Measurment measurment, Control control)
 	{
 		for(auto& p: particles) 
 		{
-			p.state = action(p.state);	
+			p.state = motion_model(p.state, control);	
 			p.weight = measurment(p.state);
 		}
 
 		normilize(particles);
-		particles = systematic_resample(particles);
+		particles = stratified_resample(particles);
 	}
 
+	MotionModel motion_model;
 	vector<Particle<State>> particles;		
 };
 

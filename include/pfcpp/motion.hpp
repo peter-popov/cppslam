@@ -3,6 +3,7 @@
 #include <random>
 #include <array>
 #include <tuple>
+#include <iostream>
 
 namespace mcl
 {
@@ -41,24 +42,23 @@ auto get_w(const C& p) -> decltype(C::w)
 
 
 
-template<typename State, typename Control>
 class VelocityMotionModelSampler
 {
 public:
 	VelocityMotionModelSampler()
-	: VelocityMotionModelSampler({0.001,0.5,0.02,0.5,0.1,0.1})
+	: VelocityMotionModelSampler({0.0,0.0,0.0,0.0,0.0,0.0})
 	{		
 	}
 
 	VelocityMotionModelSampler(std::array<double, 6>&& params)
 	: a(std::forward<std::array<double, 6>>(params))
-	, gen(seed_rd())
+	, gen(std::random_device{}())
 	, distr(0, 1.0)
-	, dt(1)
 	{		
 	}
 
-	State operator()(const State& s, const Control& control)
+	template<typename State, typename Control>
+	State operator()(const State& s, const Control& control, double dt = 1.0)
 	{
 		auto sample = [&](auto x){ return distr(gen, typename decltype(distr)::param_type(0., x));};
 
@@ -74,27 +74,24 @@ public:
 		if (fabs(w) > 0.00001)
 		{
 			auto dv_dw = v / w;
-			xp -= dv_dw * (sin(teta) - sin(teta + w * dt));
-			yp -= dv_dw * (cos(teta) - cos(teta + w * dt));
+			xp += -dv_dw * (sin(teta) - sin(teta + w * dt));
+			yp +=  dv_dw * (cos(teta) - cos(teta + w * dt));
 		}
 		else
 		{
 			xp += v * cos(teta);
-			yp += -v * sin(teta);	
+			yp += v * sin(teta);	
 		}
-		auto dir = teta + (w + gm) * dt;
-		return {int(xp),- int(yp), dir};	 
+		auto dir = teta + w * dt;
+ 		return {xp, yp, dir};	 
 	}
 
 
 private:
 	///noise params
 	std::array<double, 6> a; 
-
-	std::random_device seed_rd;
 	std::mt19937 gen;
 	std::normal_distribution<> distr;
-	double dt;
 };
 
 

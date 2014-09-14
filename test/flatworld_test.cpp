@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE( test_sensor_simple )
 	    scene.add(std::move(poly));
 	}
 
-	auto r = scene.measure_from({5.0, 5.0});
+	auto r = scene.measure_from({5.0, 5.0, 0.0});
 	int a = flatworld::Scene::num_rays;
 
 	BOOST_CHECK_EQUAL(r.size(), a);

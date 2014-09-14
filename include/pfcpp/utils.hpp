@@ -11,7 +11,7 @@ class GaussianNoise
 {
 public:
 	GaussianNoise(T sigma)
-	: gen(seed_rd())
+	: gen(std::random_device{}())
 	, distr(0, sigma)
 	{
 	}
@@ -21,7 +21,6 @@ public:
 		return static_cast<T>(std::round(distr(gen)));	
 	}
 private:
-	std::random_device seed_rd;
 	std::mt19937 gen;
 	std::normal_distribution<> distr;
 };

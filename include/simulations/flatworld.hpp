@@ -24,10 +24,19 @@ auto move_point(const Point& p, const Point& m)
 	return res;
 }
 
+
+struct Pose
+{
+	double x, y, direction;
+
+	operator Point() const {return {x,y};}
+};
+
+
 class Scene
 {
 public:
-	static const int num_rays = 4;
+	static const int num_rays = 8;
 	mutable size_t num_intersections = 0;
 
 public:
@@ -79,8 +88,9 @@ public:
 		static std::random_device rd;
 	    static std::mt19937 gen(rd());
 	    std::uniform_real_distribution<> d(0, 1);
-	    return Point{bg::get<0>(m_bbox.min_corner()) + d(gen)*width(),
-	    			 bg::get<1>(m_bbox.min_corner()) + d(gen)*height()};
+	    return Pose{ bg::get<0>(m_bbox.min_corner()) + d(gen)*width(),
+	    			 bg::get<1>(m_bbox.min_corner()) + d(gen)*height(),
+	    			 2 * 2*boost::math::constants::pi<double>( ) * d(gen)};
 	}
 
 	bool empty(Point p) const
@@ -91,33 +101,43 @@ public:
 		return true;
 	}
 
-	std::vector<Coord> measure_from(Point p) const
+	std::vector<Coord> measure_from(Pose p) const
 	{
-		std::vector<Coord> res(num_rays);
-		auto da = 2*boost::math::constants::pi<double>( ) / num_rays;
-		for (int i = 0; i < num_rays; ++i)
+		std::vector<Coord> res(num_rays, 10000);
+
+		if (bg::within(Point{p.x, p.y}, m_bbox))
 		{
-			Point touch_point;
-			res[i] = calculate_distance(p, 0 + i*da, touch_point);
+			auto da = 2*boost::math::constants::pi<double>( ) / num_rays;
+			for (int i = 0; i < num_rays; ++i)
+			{
+				Point touch_point;
+				res[i] = calculate_distance({p.x, p.y}, p.direction + i*da, touch_point);
+			}
 		}
 		return res;
 	}
 
-	std::vector<Point> sense_points(Point p) const
+	std::vector<Point> sense_points(Pose p) const
 	{
 		std::vector<Point> res(num_rays, 0);
-		if (empty(p))
+		if (empty({p.x, p.y}))
 		{
 			auto da = 2*boost::math::constants::pi<double>( ) / num_rays;
 			for (int i = 0; i < num_rays; ++i)
-				calculate_distance(p, 0.0 + i*da, res[i]);		
+				calculate_distance({p.x, p.y}, p.direction + i*da, res[i]);		
 		}
 		return res;
+	}
+
+	auto make_box(Point a, Point b) const
+	{
+		return Box({std::min(bg::get<0>(a), bg::get<0>(b)), std::min(bg::get<1>(a), bg::get<1>(b))} , 
+				{std::max(bg::get<0>(a), bg::get<0>(b)), std::max(bg::get<1>(a), bg::get<1>(b))});
 	}
 
 	double calculate_distance(Point p, double heading, Point& touch_point) const
 	{
-		static double max_range = 500;		
+		static double max_range = 1000;		
 		auto end = Point{cos(heading), sin(heading)};
 		bg::multiply_value(end, max_range);
 		bg::add_point(end, p);
@@ -125,10 +145,10 @@ public:
 		Segment ray{p, end};
 
 		query_result.resize(0);
-		rtree.query(bgi::intersects(Box{p, end}), std::back_inserter(query_result));
+		rtree.query(bgi::intersects( make_box(p, end) ), std::back_inserter(query_result));
 		
 		auto min_dist = max_range;
-		touch_point = p;
+		touch_point = end;
 		intersection_result.resize(0);
 		for (auto& idx: query_result)
 		{
