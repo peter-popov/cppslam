@@ -85,7 +85,7 @@ struct MCL
 		}
 
 		normilize(particles);
-		particles = stratified_resample(particles);
+		particles = resample(particles);
 	}
 
 	MotionModel motion_model;

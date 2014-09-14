@@ -42,17 +42,17 @@ struct MainWindow::PrivateData
 
     }
 
-    QPointF to_q_point(const ShapesMap::Point& x)
+    QPoint to_q_point(const ShapesMap::Point& x)
     {
         return {boost::geometry::get<0>(x), -boost::geometry::get<1>(x)};
     }
 
-    QPointF to_q_point(const ShapesMap::Position& x)
+    QPoint to_q_point(const ShapesMap::Position& x)
     {
         return {std::get<0>(x), -std::get<1>(x)};
     }
 
-    QPointF to_q_point(const flatworld::Pose& p)
+    QPoint to_q_point(const flatworld::Pose& p)
     {
         return {p.x, -p.y};
     }
@@ -80,7 +80,7 @@ struct MainWindow::PrivateData
         }
 
         std::vector<Pose> states;
-        for (int i = 0; i < 2000; ++i)
+        for (int i = 0; i < 3000; ++i)
         {
             auto p = random_pose(map);
             if (map.is_occupied(std::make_tuple(p.x,p.y)))
@@ -107,7 +107,7 @@ struct MainWindow::PrivateData
         std::tie(std::ignore, sense_points) = measurement_with_coords(start_pos, map);
         for (size_t i = 0; i < sense_points.size(); ++i)
         {
-            rays_markers.push_back(scene.addLine(QLineF(to_q_point(start_pos), to_q_point(sense_points[i])),
+            rays_markers.push_back(scene.addLine(QLine(to_q_point(start_pos), to_q_point(sense_points[i])),
                                             QPen(QColor(0,255,0,130), 2, Qt::DotLine)));
         }
 
@@ -143,9 +143,10 @@ struct MainWindow::PrivateData
             auto ps = particles[i].state;
             auto qp = to_q_point(ps);
             particle_markers[i]->setRect(QRectF(qp.x() - 3, qp.y() - 3, 6, 6));
-            auto qp_e = QPointF{ps.x + 10*cos(ps.direction), -ps.y - 10*sin(ps.direction)};
+            auto qp_e = QPoint{static_cast<int>(ps.x + 10*cos(ps.direction)), 
+                               static_cast<int>(-ps.y - 10*sin(ps.direction))};
         
-            particle_markers_dir[i]->setLine(QLineF(qp, qp_e));
+            particle_markers_dir[i]->setLine(QLine(qp, qp_e));
         }
     }
 };
