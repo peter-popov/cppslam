@@ -6,10 +6,5 @@ set(CMAKE_CXX_COMPILER clang++)
 project(pfcpp)
 add_definitions(-std=c++1y)
 
-include_directories("./include")
 
-enable_testing()
-
-add_subdirectory(src)
-add_subdirectory(test)
-add_subdirectory(apps/pfdemo)
+add_library(pfcpp SHARED map/shapes_map.cpp)

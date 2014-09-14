@@ -1,184 +1,69 @@
 #pragma once
 
-#include <boost/geometry.hpp>
-#include <boost/geometry/index/rtree.hpp>
+#include <map/shapes_map.hpp>
 #include <utility>
 
 namespace flatworld
 {
 
-namespace bg = boost::geometry;
-namespace bgi = boost::geometry::index;
+using namespace pfcpp::maps;
 
-typedef double Coord;
-typedef bg::model::point<Coord, 2, bg::cs::cartesian> Point;
-typedef bg::model::box<Point> Box;
-typedef bg::model::polygon<Point> Polygon;
-typedef bg::model::segment<Point> Segment;
-typedef std::pair<Box, size_t> IndexItem;
-
-auto move_point(const Point& p, const Point& m)
-{
-	auto res = p;
-	bg::add_point(res, m);
-	return res;
-}
-
+double Pi = boost::math::constants::pi<double>();
 
 struct Pose
 {
 	double x, y, direction;
 
-	operator Point() const {return {x,y};}
+	operator ShapesMap::Point() const {return {x,y};}
 };
 
 
-class Scene
+auto random_pose(const ShapesMap& map)
 {
-public:
-	static const int num_rays = 8;
-	mutable size_t num_intersections = 0;
+	static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_real_distribution<> d(0, 1);
+    double x, y, w, h;
+    std::tie(w, h) = map.size();
+    std::tie(x, y) = map.bottom_left();
+    
+    return Pose{ x + d(gen)*w, y + d(gen) * h, 2*Pi*d(gen) };    
+}
 
-public:
 
-	Scene()
-	: m_bbox({0.0, 0.0}, {0.0, 0.0})
-	{		
-	}
-
-	void add(Polygon&& poly)
+auto measurement_with_coords(Pose p, ShapesMap& map)
+{
+	static const int num_rays = 12;
+	std::vector<double> distances(num_rays, 10000);
+	std::vector<ShapesMap::Position> end_points(num_rays);
+	auto coord = std::make_tuple(p.x, p.y);
+	if ( !map.is_occupied(coord))
 	{
-		m_objects.push_back(std::forward<Polygon>(poly));
-		Box tmp;
-		bg::envelope(m_objects.back(), tmp);
-		bg::expand(m_bbox, tmp);
-
-		auto ring = bg::exterior_ring(m_objects.back());
-		auto next_pos = bg::closing_iterator<decltype(ring)>(ring);
-
-		for(auto& v: ring)
+		auto da = 2 * Pi / num_rays;
+		for (int i = 0; i < num_rays; ++i)
 		{
-			auto next_v = *++next_pos;			
-			m_segments.emplace_back(v, next_v);
-			Box sbb;
-			bg::envelope(m_segments.back(), sbb);
-
-			rtree.insert(std::make_pair(sbb, m_segments.size()-1));			
-		}		
-	}	
-
-
-	auto& objects() const {return m_objects;}
-
-	auto& bbox() const {return m_bbox;}
-
-	auto width() const
-	{
-		return std::abs(bg::get<0>(m_bbox.max_corner()) - bg::get<0>(m_bbox.min_corner()));
-	}
-
-	auto height() const
-	{
-		return std::abs(bg::get<1>(m_bbox.max_corner()) - bg::get<1>(m_bbox.min_corner()));
-	}
-
-
-	auto random_state() const
-	{
-		static std::random_device rd;
-	    static std::mt19937 gen(rd());
-	    std::uniform_real_distribution<> d(0, 1);
-	    return Pose{ bg::get<0>(m_bbox.min_corner()) + d(gen)*width(),
-	    			 bg::get<1>(m_bbox.min_corner()) + d(gen)*height(),
-	    			 2 * 2*boost::math::constants::pi<double>( ) * d(gen)};
-	}
-
-	bool empty(Point p) const
-	{
-		for (auto& obj: m_objects)
-			if (bg::within(p, obj))
-				return false;
-		return true;
-	}
-
-	std::vector<Coord> measure_from(Pose p) const
-	{
-		std::vector<Coord> res(num_rays, 10000);
-
-		if (bg::within(Point{p.x, p.y}, m_bbox))
-		{
-			auto da = 2*boost::math::constants::pi<double>( ) / num_rays;
-			for (int i = 0; i < num_rays; ++i)
-			{
-				Point touch_point;
-				res[i] = calculate_distance({p.x, p.y}, p.direction + i*da, touch_point);
-			}
+			std::tie(distances[i], end_points[i]) = map.min_distance_towards(coord, p.direction + i*da);		
 		}
-		return res;
 	}
+	return std::make_tuple(distances, end_points);
+}
 
-	std::vector<Point> sense_points(Pose p) const
+
+auto measurement(Pose p, ShapesMap& map)
+{
+	static const int num_rays = 12;
+	std::vector<double> distances(num_rays, 10000);
+	auto coord = std::make_tuple(p.x, p.y);
+	if ( !map.is_occupied(coord))
 	{
-		std::vector<Point> res(num_rays, 0);
-		if (empty({p.x, p.y}))
+		auto da = 2 * Pi / num_rays;
+		for (int i = 0; i < num_rays; ++i)
 		{
-			auto da = 2*boost::math::constants::pi<double>( ) / num_rays;
-			for (int i = 0; i < num_rays; ++i)
-				calculate_distance({p.x, p.y}, p.direction + i*da, res[i]);		
+			std::tie(distances[i], std::ignore) = map.min_distance_towards(coord, p.direction + i*da);		
 		}
-		return res;
 	}
-
-	auto make_box(Point a, Point b) const
-	{
-		return Box({std::min(bg::get<0>(a), bg::get<0>(b)), std::min(bg::get<1>(a), bg::get<1>(b))} , 
-				{std::max(bg::get<0>(a), bg::get<0>(b)), std::max(bg::get<1>(a), bg::get<1>(b))});
-	}
-
-	double calculate_distance(Point p, double heading, Point& touch_point) const
-	{
-		static double max_range = 1000;		
-		auto end = Point{cos(heading), sin(heading)};
-		bg::multiply_value(end, max_range);
-		bg::add_point(end, p);
-
-		Segment ray{p, end};
-
-		query_result.resize(0);
-		rtree.query(bgi::intersects( make_box(p, end) ), std::back_inserter(query_result));
-		
-		auto min_dist = max_range;
-		touch_point = end;
-		intersection_result.resize(0);
-		for (auto& idx: query_result)
-		{
-			auto& segm = m_segments[idx.second];			
-			bg::intersection(segm, ray, intersection_result);
-			num_intersections++;					
-		}
-
-		for (auto& pt: intersection_result)
-		{
-			auto dist = bg::distance(p, pt);
-			if (min_dist > dist)
-			{
-				min_dist = dist;
-				touch_point = pt;
-			}
-		}
-
-		return min_dist;
-	}
-
-
-private:
-	std::vector<Polygon> m_objects;	 
-	std::vector<Segment> m_segments;
-	bgi::rtree< IndexItem, bgi::quadratic<4> > rtree;
-	mutable std::vector<IndexItem> query_result;
-	mutable std::vector<Point> intersection_result;
-	Box m_bbox;
-};	
+	return distances;
+}
 
 
 auto generate_scene()
@@ -205,16 +90,14 @@ auto generate_scene()
 	};
 
 
-	Scene scene;
+	ShapesMap map;
 
 	for (auto& s: polygons)
 	{
-		Polygon poly;
-	    boost::geometry::read_wkt(s, poly);
-	    scene.add(std::move(poly));
+		map.add_wtk(s);
 	}
 
-	return scene;
+	return map;
 }
 
 

@@ -11,3 +11,4 @@ find_package(Qt5Widgets)
 add_executable(pfdemo main.cpp mainwindow.cpp)
 
 target_link_libraries(pfdemo Qt5::Widgets)
+target_link_libraries(pfdemo pfcpp)

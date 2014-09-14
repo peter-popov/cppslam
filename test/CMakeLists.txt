@@ -14,7 +14,7 @@ target_link_libraries(pfcpp_test
                       ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
                       )
 
-
+target_link_libraries(pfcpp_test pfcpp)
 
 enable_testing()
 add_test(pfcpp_test pfcpp_test)
