@@ -2,7 +2,7 @@
 
 #include<random>
 
-namespace mcl
+namespace pfcpp
 {
 
 
@@ -18,7 +18,7 @@ public:
 
 	T operator()()
 	{
-		return static_cast<T>(std::round(distr(gen)));	
+		return static_cast<T>(distr(gen));	
 	}
 private:
 	std::mt19937 gen;

@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE( test_velocity_motion_model )
 		pic.push_back(std::string(30,' '));
 	}
 
-	mcl::VelocityMotionModelSampler ms({0.001,0.5,0.02,0.5,0.1,0.1});
+	pfcpp::VelocityMotionModelSampler ms({0.001,0.5,0.02,0.5,0.1,0.1});
 
 	auto start_pose = State{10, 0, 0.785398163};
 	auto control = Control{20, 0.785398163};

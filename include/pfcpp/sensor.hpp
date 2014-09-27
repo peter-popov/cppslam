@@ -4,7 +4,7 @@
 #include <iostream>
 #include <array>
 
-namespace mcl
+namespace pfcpp
 {
 
 class BeamSensorModel
@@ -14,7 +14,7 @@ public:
 	const double max_range = 1000;
 	std::array<double, 4> a {0.2, 0.2, 0.7, 0.0};
 
-	long double normal_measurment(double z, double ze) const
+	double normal_measurment(double z, double ze) const
 	{
 		if ( z > max_range || ze > max_range )
 				return 0.0;
@@ -27,12 +27,12 @@ public:
 		return 2 * p / norm;	
 	}
 
-	long double failure() const
+	double failure() const
 	{
 		return 1 / max_range;
 	}
 
-	long double error(double z) const
+	double error(double z) const
 	{
 		if (fabs(z - max_range) < 0.001)
 			return 1.0;
@@ -47,7 +47,7 @@ public:
 
 
 	template<typename Measurment>
-	long double operator()(const Measurment& measured, const Measurment& expected)	
+	double operator()(const Measurment& measured, const Measurment& expected)	
 	{
 		auto q = 0.0;
 		auto z_pos_e = std::begin(expected);
@@ -59,13 +59,11 @@ public:
 				 	 a[1] * failure() +
 				 	 a[2] * error(*z_pos) +
 				 	 a[3] * dynamic_objects(*z_pos);
-			q += log(p);
-			//std::cout << log(p)	<< std::endl; 	 
+			q *= p;
 		}
-		q = std::exp(q/measured.size());
 		return std::isnan(q) ? 0.0 : q;
 	}
 
 };
 
-} //mcl
+} //pfcpp

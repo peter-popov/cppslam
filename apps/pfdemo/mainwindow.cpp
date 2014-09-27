@@ -28,7 +28,7 @@ struct MainWindow::PrivateData
     std::vector<Control> path;
     flatworld::Pose start_pos;
     size_t step;
-    mcl::MCL<flatworld::Pose> mcl;
+    pfcpp::ParticleFilter<flatworld::Pose> pfcpp;
 
 
 
@@ -38,7 +38,7 @@ struct MainWindow::PrivateData
     QGraphicsEllipseItem* position_marker;
     std::vector<QGraphicsLineItem*> rays_markers;
 
-    mcl::VelocityMotionModelSampler movement_model;
+    pfcpp::VelocityMotionModelSampler movement_model;
     
     PrivateData()
     {
@@ -97,7 +97,7 @@ struct MainWindow::PrivateData
         }
 
 
-        mcl = mcl::MCL<flatworld::Pose>(states, {{0.08,0.5,0.005,0.1,0.0,0.0}});
+        pfcpp = pfcpp::ParticleFilter<flatworld::Pose>(states, {{0.08,0.5,0.005,0.1,0.0,0.0}});
 
         for (auto& p: states)
         {
@@ -127,10 +127,10 @@ struct MainWindow::PrivateData
 
     void update_view(QGraphicsScene& scene)
     {
-        mcl::BeamSensorModel sensor_model;
+        pfcpp::BeamSensorModel sensor_model;
         auto m = path[step];
         start_pos = movement_model(start_pos, m);        
-        mcl([&](auto p){ return sensor_model(flatworld::measurement(start_pos, map),
+        pfcpp([&](auto p){ return sensor_model(flatworld::measurement(start_pos, map),
                                              flatworld::measurement(p, map));},
             m);
 
@@ -148,7 +148,7 @@ struct MainWindow::PrivateData
                          QPen(QColor(255,0,0)),
                          QBrush(QColor(255,0,0)));
 
-        auto particles = mcl.particles;
+        auto particles = pfcpp.particles;
         for (size_t i = 0; i < particle_markers.size() && particles.size(); ++i)
         {   
             auto ps = particles[i].state;
@@ -198,7 +198,7 @@ MainWindow::MainWindow(QWidget *parent) :
     layout->addWidget(view);
     setLayout(layout);    
     
-    setWindowTitle("MCL demo");
+    setWindowTitle("ParticleFilter demo");
 }
 
 MainWindow::~MainWindow()

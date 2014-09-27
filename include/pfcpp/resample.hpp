@@ -4,7 +4,7 @@
 #include <random>
 #include <vector>
 
-namespace mcl
+namespace pfcpp
 {
 
 template<typename P>
