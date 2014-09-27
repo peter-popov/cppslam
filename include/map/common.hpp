@@ -13,6 +13,4 @@ struct Pose
 };
 
 
-
-
 }

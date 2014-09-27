@@ -3,6 +3,7 @@
 
 #include <QtWidgets>
 #include <memory>
+#include "SimulationModel.hpp"
 
 class MainWindow : public QWidget
 {
@@ -16,6 +17,7 @@ private slots:
     void TimerEvent();
     void on_buttonStart_clicked();
     void on_buttonStep_clicked();
+    void on_particlesCount_changed(int);
 
 private:
     void DoStep();
@@ -27,8 +29,13 @@ private:
     QTimer timer;
 
 private:
-    struct PrivateData;
-    std::unique_ptr<PrivateData> d;
+    std::unique_ptr<SimulationModel> simulation;
+    std::vector<QGraphicsEllipseItem*> particle_markers;
+    std::vector<QGraphicsLineItem*> particle_markers_dir;
+    
+    QGraphicsEllipseItem* position_marker;
+    std::vector<QGraphicsLineItem*> rays_markers;
+    int particles_count;
 };
 
 #endif // MAINWINDOW_H

@@ -16,10 +16,9 @@ namespace maps
 class ShapesMap
 {
 public:
-	typedef int coord_t;
+	typedef double coord_t;
 
 	typedef boost::geometry::model::point<coord_t, 2, boost::geometry::cs::cartesian> Point;
-	//typedef std::tuple<double, double> Point;
 	typedef boost::geometry::model::box<Point> Box;
 	typedef boost::geometry::model::polygon<Point> Polygon;
 
@@ -27,8 +26,6 @@ public:
 
 	typedef std::tuple<coord_t, coord_t> Position;
 	typedef std::pair<Position, Position> Segment;
-
-	ShapesMap read_from_wtk(std::istream& is);
 
 public:
 	ShapesMap();
@@ -45,7 +42,7 @@ public:
 
 	bool is_occupied(Position point) const;
 
-	std::tuple<coord_t, Position> min_distance_towards(Position p, double heading);
+	std::tuple<coord_t, Position> min_distance_towards(Position p, double heading, coord_t max_range);
 
 
 	std::vector<Polygon> objects;

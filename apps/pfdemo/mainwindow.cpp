@@ -1,180 +1,13 @@
 #include <QtWidgets>
 #include "mainwindow.hpp"
 
-#include <simulations/mazeworld.hpp>
-#include <simulations/flatworld.hpp>
-#include <map/shapes_map.hpp>
-#include <pfcpp/mcl.hpp>
-#include <pfcpp/utils.hpp>
-#include <pfcpp/sensor.hpp>
 #include <fstream>
 
 
 
-using namespace pfcpp::maps;
-using namespace flatworld;
-
-
-struct MainWindow::PrivateData
-{
-
-    struct Control
-    {
-        double v;
-        double w;    
-    };
-
-    pfcpp::maps::ShapesMap map;
-    std::vector<Control> path;
-    flatworld::Pose start_pos;
-    size_t step;
-    pfcpp::ParticleFilter<flatworld::Pose> pfcpp;
-
-
-
-    std::vector<QGraphicsEllipseItem*> particle_markers;
-    std::vector<QGraphicsLineItem*> particle_markers_dir;
-    
-    QGraphicsEllipseItem* position_marker;
-    std::vector<QGraphicsLineItem*> rays_markers;
-
-    pfcpp::VelocityMotionModelSampler movement_model;
-    
-    PrivateData()
-    {
-
-    }
-
-    QPoint to_q_point(const ShapesMap::Point& x)
-    {
-        return {boost::geometry::get<0>(x), -boost::geometry::get<1>(x)};
-    }
-
-    QPoint to_q_point(const ShapesMap::Position& x)
-    {
-        return {std::get<0>(x), -std::get<1>(x)};
-    }
-
-    QPoint to_q_point(const flatworld::Pose& p)
-    {
-        return {p.x, -p.y};
-    }
-
-
-    void init_scene(QGraphicsScene& scene, QGraphicsView& view)
-    {
-        scene.clear();
-
-        //start_pos = {-640, -350, 1.570796};
-        start_pos = {-340, -150, 0.0};
-        path = {{50, 0},
-                //{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},
-                //{50, -1.570796},
-                {50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},
-                {50, 1.570796},
-                {50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0},{50, 0}};
-        map = flatworld::generate_scene();
-        step = 0;
-        scene.clear();        
-        particle_markers.clear();
-        rays_markers.clear();
-        particle_markers_dir.clear();
-
-        for(auto& poly: map.objects)
-        {
-            QPolygonF qpoly;
-            boost::geometry::for_each_point(poly,[&](auto x){qpoly.push_back(to_q_point(x));});
-            scene.addPolygon(qpoly, QPen(), QBrush(QColor(100,100,100,255)));
-        }
-
-        std::vector<Pose> states;
-        for (int i = 0; i < 5000; ++i)
-        {
-            auto p = random_pose(map);
-            if (map.is_occupied(std::make_tuple(p.x,p.y)))
-                continue;
-            states.push_back(p);
-        }
-
-
-        pfcpp = pfcpp::ParticleFilter<flatworld::Pose>(states, {{0.08,0.5,0.005,0.1,0.0,0.0}});
-
-        for (auto& p: states)
-        {
-            auto qp = to_q_point(p);
-            particle_markers.push_back(scene.addEllipse(QRectF(qp.x() - 3, qp.y() - 3, 6, 6),
-                                                        QPen(QColor(0,0,255,60)),
-                                                        QBrush(QColor(0,0,255,60))));
-
-            auto qp_e = QPointF{p.x + 10*cos(p.direction), -p.y - 10*sin(p.direction)};
-            particle_markers_dir.push_back(scene.addLine(QLineF(qp, qp_e),
-                                                         QPen(QColor(0,0,255,50))));
-        }
-
-        std::vector<ShapesMap::Position> sense_points;
-        std::tie(std::ignore, sense_points) = measurement_with_coords(start_pos, map);
-        for (size_t i = 0; i < sense_points.size(); ++i)
-        {
-            rays_markers.push_back(scene.addLine(QLine(to_q_point(start_pos), to_q_point(sense_points[i])),
-                                            QPen(QColor(0,255,0,150), 2, Qt::DotLine)));
-        }
-
-        auto rect = scene.sceneRect();
-        rect.moveBottomLeft(rect.bottomLeft() + QPointF{-10, -10});
-        rect.moveTopRight(rect.topRight() + QPointF{10, 10});
-        scene.setSceneRect(rect);
-    }
-
-    void update_view(QGraphicsScene& scene)
-    {
-        pfcpp::BeamSensorModel sensor_model;
-        auto m = path[step];
-        start_pos = movement_model(start_pos, m);        
-        pfcpp([&](auto p){ return sensor_model(flatworld::measurement(start_pos, map),
-                                             flatworld::measurement(p, map));},
-            m);
-
-        std::vector<ShapesMap::Position> sense_points;
-        std::tie(std::ignore, sense_points) = measurement_with_coords(start_pos, map);
-        for (size_t i = 0; i < sense_points.size() && i < rays_markers.size(); ++i)
-        {
-            rays_markers[i]->setLine(QLineF(to_q_point(start_pos), to_q_point(sense_points[i])));
-        }
-
-        step++;
-
-        auto qp = to_q_point(start_pos);
-        scene.addEllipse(QRectF(qp.x() - 3, qp.y() - 3, 6, 6),
-                         QPen(QColor(255,0,0)),
-                         QBrush(QColor(255,0,0)));
-
-        auto particles = pfcpp.particles;
-        for (size_t i = 0; i < particle_markers.size() && particles.size(); ++i)
-        {   
-            auto ps = particles[i].state;
-                         
-            /*if (map.is_occupied(ps))
-            {
-                ps.x = ps.y = 3;
-            }*/
-
-            auto qp = to_q_point(ps);
-            particle_markers[i]->setRect(QRectF(qp.x() - 3, qp.y() - 3, 6, 6));
-            //particle_markers[i]->setBrush(QBrush(QColor(0,0,255, 255*particles[i].weight)));
-            //particle_markers[i]->setPen(QPen(QColor(0,0,255, 255*particles[i].weight)));
-            
-            auto qp_e = QPoint{static_cast<int>(ps.x + 10*cos(ps.direction)), 
-                               static_cast<int>(-ps.y - 10*sin(ps.direction))};
-        
-            particle_markers_dir[i]->setLine(QLine(qp, qp_e));
-        }
-    }
-};
-
-
 MainWindow::MainWindow(QWidget *parent) :
     QWidget(parent),
-    d(new PrivateData())
+    particles_count(1000)
 {
     scene = new QGraphicsScene;
     view = new QGraphicsView;
@@ -184,14 +17,21 @@ MainWindow::MainWindow(QWidget *parent) :
 
     auto buttons = new QWidget;
     auto start_button = new QPushButton("Start");
-    auto step_button = new QPushButton("Step");    
+    auto step_button = new QPushButton("Step");
+    auto particles_spinbox = new QSpinBox();
+    particles_spinbox->setRange(100, 20000);
+    particles_spinbox->setSingleStep(100);
+    particles_spinbox->setSuffix(" particles");
+    particles_spinbox->setValue(particles_count);    
     auto buttons_layout = new QVBoxLayout;
     buttons_layout->addWidget(start_button);
     buttons_layout->addWidget(step_button);
+    buttons_layout->addWidget(particles_spinbox);
     buttons->setLayout(buttons_layout);
 
     connect(start_button, SIGNAL(clicked()), this, SLOT(on_buttonStart_clicked()));
     connect(step_button, SIGNAL(clicked()), this, SLOT(on_buttonStep_clicked()));
+    QObject::connect(particles_spinbox, SIGNAL(valueChanged(int)), this, SLOT(on_particlesCount_changed(int)));
 
     auto layout = new QHBoxLayout;
     layout->addWidget(buttons, 0, Qt::AlignTop);
@@ -207,27 +47,84 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_buttonStart_clicked()
 {
-    d->init_scene(*scene, *view);
-    //d->update_view(*scene);
+    simulation.reset( new SimulationModel(SimulationConfig(particles_count, 12),
+                                     std::make_tuple(20, -30, 0.0),
+                                     {{5, 0}, {5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},
+                                      {5, -1.570796},
+                                      {5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0}},
+                                     "../data/indoor_1.csv"));   
+
+    scene->clear();
+    particle_markers.clear();
+    rays_markers.clear();
+    particle_markers_dir.clear();
+
+    auto map_features = simulation->export_map();
+    for(auto& poly: map_features)
+        scene->addPolygon(poly, QPen(), QBrush(QColor(100,100,100,255)));
+    
+    
+    for (size_t i = 0; i < simulation->particle_count(); ++i)
+    {
+        QPointF qp;
+        double dir;
+        std::tie(qp, dir) = simulation->particle(i);
+
+        particle_markers.push_back(scene->addEllipse(QRectF(qp.x() - 0.3, qp.y() - 0.3, 0.6, 0.6),
+                                                    QPen(QColor(0,0,255,60)),
+                                                    QBrush(QColor(0,0,255,60))));
+
+        auto qp_e = QPointF{qp.x() + 1 * cos(dir), qp.y() + 1*sin(dir)};
+        particle_markers_dir.push_back(scene->addLine(QLineF(qp, qp_e),
+                                                     QPen(QColor(0,0,255,50))));
+    }
+
+    QPointF pos;
+    std::tie(pos, std::ignore) = simulation->current_position();
+    auto sense_points = simulation->measurment_end_points();
+    for (auto sp: sense_points)
+    {
+        rays_markers.push_back(scene->addLine(QLineF(pos, sp),
+                                              QPen(QColor(0,255,0,150), 0.5, Qt::DotLine)));
+    }
+ 
+
+    position_marker = scene->addEllipse(QRectF(pos.x() - 0.3, pos.y() - 0.3, 0.6, 0.6),
+                                                    QPen(QColor(255,0,0)),
+                                                    QBrush(QColor(255,0,0,160)));
+
+    auto rect = scene->sceneRect();
+    view->fitInView(rect);
     view->update();
 }
 
-
 void MainWindow::TimerEvent()
 {
-    if (d->step + 1 < d->path.size())
-    {
-        DoStep();
-    }
-    else
-    {
-        timer.stop();
-    }
+    DoStep();
 }
 
 void MainWindow::DoStep()
 {    
-    d->update_view(*scene);
+    simulation->update();
+
+    for (size_t i = 0; i < simulation->particle_count(); ++i)
+    {
+        QPointF qp;
+        double dir;
+        std::tie(qp, dir) = simulation->particle(i);
+        particle_markers[i]->setRect(QRectF(qp.x() - 0.3, qp.y() - 0.3, 0.6, 0.6));
+        particle_markers_dir[i]->setLine(QLineF(qp, QPointF{qp.x() + 1 * cos(dir), qp.y() + 1 * sin(dir)}));
+    }
+
+    QPointF pos;
+    std::tie(pos, std::ignore) = simulation->current_position();
+    auto sense_points = simulation->measurment_end_points();    
+    for (size_t i = 0; i < sense_points.size(); ++i)
+        rays_markers[i]->setLine(QLineF(pos, sense_points[i]));
+
+
+    position_marker->setRect(QRectF(pos.x() - 0.5, pos.y() - 0.5, 1, 1));
+    
     view->update();
 }
 
@@ -235,4 +132,9 @@ void MainWindow::DoStep()
 void MainWindow::on_buttonStep_clicked()
 {
     DoStep();
+}
+
+void MainWindow::on_particlesCount_changed(int new_value)
+{
+    particles_count = new_value;
 }

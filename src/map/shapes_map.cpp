@@ -156,17 +156,19 @@ auto ShapesMap::size() const -> std::tuple<coord_t, coord_t>
 
 bool ShapesMap::is_occupied(Position point) const
 {
-	if (!bg::within(untuplify(point), bbox)) return true;
-	query_result.resize(0);
-	rtree.query(bg::index::intersects(untuplify(point)), std::back_inserter(query_result));
-	return !query_result.empty();
+	auto up = untuplify(point);
+	if (!bg::within(up, bbox)) return true;
+	for (auto& poly: objects)
+	{
+		if (bg::within(up, poly)) return true;
+	}
+	return false;
 }
 
 
 
-auto ShapesMap::min_distance_towards(Position p, double heading) -> std::tuple<coord_t, Position>
+auto ShapesMap::min_distance_towards(Position p, double heading, coord_t maximum_range) -> std::tuple<coord_t, Position>
 {
-	static coord_t maximum_range = 1000;		
 	auto end = Position{std::get<0>(p) + cos(heading)*maximum_range, 
 						std::get<1>(p) + sin(heading)*maximum_range};	
 
