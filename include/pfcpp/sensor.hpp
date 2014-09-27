@@ -12,13 +12,13 @@ class BeamSensorModel
 public:
 	const double Pi = 3.14159;
 	const double max_range = 1000;
-	std::array<double, 4> a {0.2, 0.2, 0.7, 0.0};
+	std::array<double, 4> a {0.001, 0.299, 0.7, 0.0};
 
 	double normal_measurment(double z, double ze) const
 	{
 		if ( z > max_range || ze > max_range )
 				return 0.0;
-		long double sigma2 = 1000.0;
+		long double sigma2 = 4000.0;
 		long double sqrt2sigma = std::sqrt(2*sigma2);
 		
 		auto p = std::exp(-0.5 * (z - ze) * (z - ze) / sigma2);
@@ -40,7 +40,7 @@ public:
 			return 0.0;
 	}
 
-	long double dynamic_objects(double z) const
+	double dynamic_objects(double z) const
 	{
 		return 0.0;
 	}
@@ -49,7 +49,7 @@ public:
 	template<typename Measurment>
 	double operator()(const Measurment& measured, const Measurment& expected)	
 	{
-		auto q = 0.0;
+		auto q = 1.0;
 		auto z_pos_e = std::begin(expected);
 		auto z_pos = std::begin(measured);
 

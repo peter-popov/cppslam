@@ -8,7 +8,7 @@ set(CMAKE_AUTOMOC ON)
 
 find_package(Qt5Widgets)
 
-add_executable(pfdemo main.cpp mainwindow.cpp)
+add_executable(pfdemo main.cpp mainwindow.cpp SimulationModel.cpp)
 
 target_link_libraries(pfdemo Qt5::Widgets)
 target_link_libraries(pfdemo pfcpp)

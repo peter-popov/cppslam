@@ -13,7 +13,7 @@ double Pi = boost::math::constants::pi<double>();
 
 struct Pose
 {
-	int x, y;
+	double x, y;
 	double direction;
 
 	operator ShapesMap::Point() const {return {x,y};}
@@ -31,15 +31,14 @@ auto random_pose(const ShapesMap& map)
     std::tie(w, h) = map.size();
     std::tie(x, y) = map.bottom_left();
     
-    return Pose{ static_cast<int>(x + d(gen)*w), 
-    			 static_cast<int>(y + d(gen) * h), 
+    return Pose{ x + d(gen) * w, 
+    			 y + d(gen) * h, 
     			 2*Pi*d(gen) };    
 }
 
 
-auto measurement_with_coords(Pose p, ShapesMap& map)
+auto measurement_with_coords(Pose p, ShapesMap& map, int num_rays = 16)
 {
-	static const int num_rays = 16;
 	std::vector<int> distances(num_rays, 10000);
 	std::vector<ShapesMap::Position> end_points(num_rays);
 	auto coord = std::make_tuple(p.x, p.y);
@@ -56,9 +55,8 @@ auto measurement_with_coords(Pose p, ShapesMap& map)
 }
 
 
-auto measurement(Pose p, ShapesMap& map)
+auto measurement(Pose p, ShapesMap& map, int num_rays = 16)
 {
-	static const int num_rays = 16;
 	std::vector<int> distances(num_rays, 10000);
 	auto coord = std::make_tuple(p.x, p.y);
 	if ( !map.is_occupied(coord))

@@ -3,6 +3,7 @@
 
 #include <QtWidgets>
 #include <memory>
+#include "SimulationModel.hpp"
 
 class MainWindow : public QWidget
 {
@@ -27,8 +28,13 @@ private:
     QTimer timer;
 
 private:
-    struct PrivateData;
-    std::unique_ptr<PrivateData> d;
+    std::unique_ptr<SimulationModel> simulation;
+    std::vector<QGraphicsEllipseItem*> particle_markers;
+    std::vector<QGraphicsLineItem*> particle_markers_dir;
+    
+    QGraphicsEllipseItem* position_marker;
+    std::vector<QGraphicsLineItem*> rays_markers;
+
 };
 
 #endif // MAINWINDOW_H
