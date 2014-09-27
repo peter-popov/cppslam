@@ -16,11 +16,11 @@ auto make_box(Point a, Point b)
 }
 
 
-template<typename P>
-auto fast_intersect(const P& p1, const P& p2, const P& p3, const P& p4, P& res, int& dist)
+template<typename P, typename T>
+auto fast_intersect(const P& p1, const P& p2, const P& p3, const P& p4, P& res, T& dist)
 {
-	int x,y;
-	int x1,y1,x2,y2,x3,y3,x4,y4;
+	T x,y;
+	T x1,y1,x2,y2,x3,y3,x4,y4;
 	std::tie(x1, y1) = p1;
 	std::tie(x2, y2) = p2;
 	std::tie(x3, y3) = p3;
@@ -28,7 +28,7 @@ auto fast_intersect(const P& p1, const P& p2, const P& p3, const P& p4, P& res, 
 
 	auto same_sign = [](auto x, auto y) { return std::signbit(x) == std::signbit(y); };
 
-	int x1lo,x1hi,y1lo,y1hi;
+	T x1lo,x1hi,y1lo,y1hi;
 
 	auto Ax = x2 - x1;
 	auto Bx = x3 - x4;
@@ -156,7 +156,7 @@ auto ShapesMap::size() const -> std::tuple<coord_t, coord_t>
 
 bool ShapesMap::is_occupied(Position point) const
 {
-	if (!bg::within(untuplify(point), bbox)) return false;
+	if (!bg::within(untuplify(point), bbox)) return true;
 	query_result.resize(0);
 	rtree.query(bg::index::intersects(untuplify(point)), std::back_inserter(query_result));
 	return !query_result.empty();

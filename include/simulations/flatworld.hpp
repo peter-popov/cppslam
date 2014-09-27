@@ -2,6 +2,7 @@
 
 #include <map/shapes_map.hpp>
 #include <utility>
+#include <fstream>
 
 namespace flatworld
 {
@@ -16,6 +17,7 @@ struct Pose
 	double direction;
 
 	operator ShapesMap::Point() const {return {x,y};}
+	operator ShapesMap::Position() const {return ShapesMap::Position{x,y};}
 };
 
 
@@ -37,7 +39,7 @@ auto random_pose(const ShapesMap& map)
 
 auto measurement_with_coords(Pose p, ShapesMap& map)
 {
-	static const int num_rays = 32;
+	static const int num_rays = 16;
 	std::vector<int> distances(num_rays, 10000);
 	std::vector<ShapesMap::Position> end_points(num_rays);
 	auto coord = std::make_tuple(p.x, p.y);
@@ -56,7 +58,7 @@ auto measurement_with_coords(Pose p, ShapesMap& map)
 
 auto measurement(Pose p, ShapesMap& map)
 {
-	static const int num_rays = 12;
+	static const int num_rays = 16;
 	std::vector<int> distances(num_rays, 10000);
 	auto coord = std::make_tuple(p.x, p.y);
 	if ( !map.is_occupied(coord))
@@ -95,7 +97,21 @@ auto generate_scene()
 	};
 
 
+
+	std::ifstream file("/home/ppopov/maps/output.csv");
 	ShapesMap map;
+
+	for( std::string line; getline( file, line ); )
+	{
+
+		auto pos_a = line.find_first_of('\"') + 1;
+		auto pos_b = line.find_last_of('\"');
+		if ( pos_b > pos_a )
+			std::cout << line.substr(pos_a, pos_b - pos_a) << std::endl;
+	}
+
+
+	
 
 	for (auto& s: polygons)
 	{

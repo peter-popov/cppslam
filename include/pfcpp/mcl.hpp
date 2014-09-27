@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <random>
+#include <algorithm>
 
 #include "resample.hpp"
 #include "motion.hpp"
@@ -15,14 +16,14 @@ template<typename State>
 struct Particle
 {
 	State state;
-	double weight;
+	long double weight;
 };
 
 
 template<typename S>
 void normilize(std::vector<Particle<S>>& v)
 {
-    double total = 0;
+    long double total = 0;
     for(auto& p: v) total += p.weight;
     for(auto& p: v) p.weight = p.weight / total;
 }
@@ -41,7 +42,7 @@ void scale(std::vector<Particle<S>>& v)
 template<typename T>
 double weight_function(vector<T> expected, vector<T> measured)
 {
-	double res = 0;
+	long double res = 0;
 	auto p1 = begin(expected);
 	auto p2 = begin(measured);
 	for( ;p1 != end(expected) && p2 != end(measured);
@@ -85,7 +86,7 @@ struct MCL
 		}
 
 		normilize(particles);
-		particles = resample(particles);
+		particles = stratified_resample(particles);
 	}
 
 	MotionModel motion_model;
