@@ -3,18 +3,20 @@
 
 #include <QtWidgets>
 #include <memory>
+#include <pfcpp/sensor.hpp>
 
 
 
 struct SimulationConfig
 {
-	SimulationConfig(size_t particles, size_t beams):particle_count(particles),
+	SimulationConfig(size_t particles = 1, size_t beams = 1):particle_count(particles),
 		beams_count(beams)
 	{		
 	}
 
 	size_t particle_count;
 	size_t beams_count;
+	pfcpp::SensorSetings sensor_settings;
 
 	enum
 	{

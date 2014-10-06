@@ -44,7 +44,7 @@ SimulationModel::SimulationModel( SimulationConfig cfg, std::tuple<double, doubl
         states.push_back(p);
     }
 
-    pimpl->pf = pfcpp::ParticleFilter<flatworld::Pose>(states, {{0.1,0.5,0.05,0.1,0.0,0.0}});	
+    pimpl->pf = pfcpp::ParticleFilter<flatworld::Pose>(states, {{0.4,0.5,0.05,0.1,0.0,0.0}});	
 }
 
 SimulationModel::~SimulationModel()
@@ -79,8 +79,8 @@ std::tuple<QPointF, double> SimulationModel::particle(size_t i) const
 
 void SimulationModel::update()
 {
-	double max_range = 200;
-	pfcpp::BeamSensorModel sensor_model(max_range);
+	double max_range = config.sensor_settings.ray_length;
+	pfcpp::BeamSensorModel sensor_model(config.sensor_settings);
 	pfcpp::VelocityMotionModelSampler movement;
 	pimpl->robot_pos = movement(pimpl->robot_pos, pimpl->path[pimpl->step]);
 

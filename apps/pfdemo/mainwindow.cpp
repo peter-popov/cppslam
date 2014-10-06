@@ -1,7 +1,10 @@
 #include <QtWidgets>
 #include "mainwindow.hpp"
+#include "sensorwindow.hpp"
 
 #include <fstream>
+#include <iostream>
+
 
 
 
@@ -22,15 +25,21 @@ MainWindow::MainWindow(QWidget *parent) :
     particles_spinbox->setRange(100, 20000);
     particles_spinbox->setSingleStep(100);
     particles_spinbox->setSuffix(" particles");
-    particles_spinbox->setValue(particles_count);    
+    particles_spinbox->setValue(particles_count);
+    auto sensor_settings = new QPushButton("Sensor...");
+
+    
     auto buttons_layout = new QVBoxLayout;
     buttons_layout->addWidget(start_button);
     buttons_layout->addWidget(step_button);
     buttons_layout->addWidget(particles_spinbox);
+    buttons_layout->addWidget(sensor_settings);
+
     buttons->setLayout(buttons_layout);
 
     connect(start_button, SIGNAL(clicked()), this, SLOT(on_buttonStart_clicked()));
     connect(step_button, SIGNAL(clicked()), this, SLOT(on_buttonStep_clicked()));
+    connect(sensor_settings, SIGNAL(clicked()), this, SLOT(on_sensor_settings_clicked()));
     QObject::connect(particles_spinbox, SIGNAL(valueChanged(int)), this, SLOT(on_particlesCount_changed(int)));
 
     auto layout = new QHBoxLayout;
@@ -47,7 +56,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_buttonStart_clicked()
 {
-    simulation.reset( new SimulationModel(SimulationConfig(particles_count, 12),
+    config.beams_count = 12;
+    simulation.reset( new SimulationModel(config,
                                      std::make_tuple(20, -30, 0.0),
                                      {{5, 0}, {5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},{5, 0},
                                       {5, -1.570796},
@@ -137,4 +147,12 @@ void MainWindow::on_buttonStep_clicked()
 void MainWindow::on_particlesCount_changed(int new_value)
 {
     particles_count = new_value;
+    config.particle_count = new_value;
+}
+
+void MainWindow::on_sensor_settings_clicked()
+{
+    SensorWindow window;
+    config.sensor_settings = window.getSettings();
+    window.exec();
 }

@@ -18,6 +18,7 @@ private slots:
     void on_buttonStart_clicked();
     void on_buttonStep_clicked();
     void on_particlesCount_changed(int);
+    void on_sensor_settings_clicked();
 
 private:
     void DoStep();
@@ -36,6 +37,7 @@ private:
     QGraphicsEllipseItem* position_marker;
     std::vector<QGraphicsLineItem*> rays_markers;
     int particles_count;
+    SimulationConfig config;
 };
 
 #endif // MAINWINDOW_H

@@ -39,7 +39,7 @@ auto random_pose(const ShapesMap& map)
 
 auto measurement_with_coords(Pose p, ShapesMap& map, int num_rays = 16, double max_range = 1000.0)
 {
-	std::vector<int> distances(num_rays, max_range);
+	std::vector<double> distances(num_rays, max_range);
 	std::vector<ShapesMap::Position> end_points(num_rays);
 	auto coord = std::make_tuple(p.x, p.y);
 	if ( !map.is_occupied(coord))
@@ -57,7 +57,7 @@ auto measurement_with_coords(Pose p, ShapesMap& map, int num_rays = 16, double m
 
 auto measurement(Pose p, ShapesMap& map, int num_rays = 16, double max_range = 1000.0)
 {
-	std::vector<int> distances(num_rays, max_range);
+	std::vector<double> distances(num_rays, max_range);
 	auto coord = std::make_tuple(p.x, p.y);
 	if ( !map.is_occupied(coord))
 	{
