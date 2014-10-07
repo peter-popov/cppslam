@@ -1,18 +1,15 @@
 #include <QApplication>
 #include <QQmlApplicationEngine>
+#include <QtQml>
 
-
-
-class SensorModel
-{
-	//QPROPERTY a0, a1, a2, a3, lambda, sigma, max range
-	//QPROPERTY samples, read-only
-public:
-	const QVector<double>& samples();
-};
+#include "SensorSettingsModel.hpp"	
 
 int main(int argc, char *argv[])
 {	
+
+	qmlRegisterType<SensorSettingsModel>("qdemo.models", 1, 0, "SensorSettingsModel");
+
+
     QApplication app(argc, argv);
     QQmlApplicationEngine engine("mainwindow.qml");
     return app.exec();

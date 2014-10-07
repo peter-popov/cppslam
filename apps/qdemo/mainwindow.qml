@@ -7,8 +7,8 @@ ApplicationWindow {
     id: applicationWindow1
     title: qsTr("Hello World")
     visible: true
-    width: 640
-    height: 480
+    width: 800
+    height: 680
 
     SplitView {
         id: splitView1

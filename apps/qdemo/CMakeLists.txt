@@ -10,11 +10,15 @@ find_package(Qt5Widgets)
 find_package(Qt5Quick)
 
 add_executable(qdemo main.cpp
-					 SimulationModel.cpp)
+					 SimulationModel.cpp
+					 SensorSettingsModel.cpp)
 
 target_link_libraries(qdemo Qt5::Widgets)
 target_link_libraries(qdemo Qt5::Qml)
 target_link_libraries(qdemo pfcpp)
 
-file(COPY mainwindow.qml DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-file(COPY SensorSettings.qml DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+add_custom_command(TARGET qdemo
+	POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.qml ${CMAKE_CURRENT_BINARY_DIR}/mainwindow.qml
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/SensorSettings.qml ${CMAKE_CURRENT_BINARY_DIR}/SensorSettings.qml    
+    COMMENT "Copying QML files")

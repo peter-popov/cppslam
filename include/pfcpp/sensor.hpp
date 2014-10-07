@@ -46,13 +46,18 @@ public:
 
 		for (; z_pos != std::end(measured) && z_pos_e != std::end(expected); ++z_pos, ++z_pos_e)
 		{
-			auto p = a[0] * normal_measurment(*z_pos, *z_pos_e) + 
-				 	 a[1] * failure() +
-				 	 a[2] * error(*z_pos) +
-				 	 a[3] * dynamic_objects(*z_pos, *z_pos_e);
-			q *= p;
+			q *= this->operator()(*z_pos, *z_pos_e);
 		}
-		return std::isnan(q) ? 0.0 : q;
+		return q;
+	}
+
+	auto operator()(const double& measured, const double& expected)	
+	{		
+		auto p = a[0] * normal_measurment(measured, expected) + 
+				 a[1] * failure() +
+				 a[2] * error(measured) +
+				 a[3] * dynamic_objects(measured, expected);
+		return std::isnan(p) ? 0.0 : p;
 	}
 
 private:
