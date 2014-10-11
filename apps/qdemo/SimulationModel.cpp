@@ -6,10 +6,106 @@
 #include <pfcpp/sensor.hpp>
 
 using namespace pfcpp::maps;
-using namespace flatworld;
+
+
+struct Simulation::Impl
+{
+	size_t step = 0;
+	pfcpp::maps::ShapesMap map;
+    flatworld::Pose robot_pos;
+    pfcpp::ParticleFilter<flatworld::Pose> pf;
+};
+
+Pose toQPose(flatworld::Pose p)
+{
+	Pose qp;
+	qp.setPosition({p.x, p.y});
+	qp.setOrientation(p.direction);
+	return qp;
+}
+
+
+template<typename T>
+static T* list_at(QQmlListProperty<T> *property, int index)
+{
+	auto lst = (QList<std::shared_ptr<T>>*)property->data;
+	return lst->at(index).get();
+}
+
+template<typename T>
+static int list_count(QQmlListProperty<T> *property)
+{
+	auto lst = (QList<std::shared_ptr<Particle>>*)property->data;
+	return lst->size();	
+}
+
+Simulation::Simulation()
+{
+
+}
+
+Simulation::~Simulation()
+{
+}
+	
+
+QQmlListProperty<Particle> Simulation::particles()
+{
+	return QQmlListProperty<Particle>(this, &m_particles, list_count<Particle>, list_at<Particle>);
+}
+
+QQmlListProperty<QPointF> Simulation::sensorBeams()
+{
+	return QQmlListProperty<QPointF>(this, &m_sensorBeams, list_count<QPointF>, list_at<QPointF>);
+}
+
+void Simulation::init(QString mapUrl, Pose* pose)
+{
+	auto startPosition = *pose;
+	pimpl.reset(new Impl);
+
+	pimpl->map = flatworld::load_scene(mapUrl.toStdString());
+	pimpl->robot_pos.x = startPosition.position().x();
+	pimpl->robot_pos.y = startPosition.position().y();
+	pimpl->robot_pos.direction = startPosition.orientation();
+    
+    std::vector<flatworld::Pose> states;
+    for (int i = 0; i < m_mcl->numberOfParticles(); ++i)
+    {
+        auto p = flatworld::random_pose(pimpl->map);
+        if (pimpl->map.is_occupied(std::make_tuple(p.x,p.y)))
+            continue;
+        states.push_back(p);
+
+    }
+
+    pimpl->pf = pfcpp::ParticleFilter<flatworld::Pose>(states, {{0.4,0.5,0.05,0.1,0.0,0.0}});
+
+    updateParticlesList();
+    emit initialized();
+}
+
+void Simulation::move(const VelocityControl& control)
+{
+	
+}
+
+
+void Simulation::updateParticlesList()
+{
+	m_particles.clear();
+	for (auto& particle: pimpl->pf.particles)
+	{
+		m_particles.push_back(std::make_shared<Particle>());		
+		m_particles.back()->setpose(toQPose(particle.state));
+		m_particles.back()->setweight(particle.weight);
+	}
+}
 
 
 
+
+/*
 struct SimulationModel::Impl
 {
 	size_t step = 0;
@@ -107,3 +203,4 @@ std::vector<QPolygonF> SimulationModel::export_map()
 	}
 	return res;
 }
+*/
