@@ -2,6 +2,7 @@ import QtQuick 2.2
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import qdemo.models 1.0
+import ShapesView 1.0
 
 ApplicationWindow {
     id: applicationWindow1
@@ -60,6 +61,7 @@ ApplicationWindow {
                     }                    
                     SpinBox {
                        id: particlesCount
+                       Layout.minimumWidth: 70
                        maximumValue: 20000
                        minimumValue: 100
                        stepSize: 100
@@ -91,30 +93,43 @@ ApplicationWindow {
 
         }
 
-        Canvas {
-            id: simulationCanvas
-            Layout.minimumWidth: 50
-            Layout.fillWidth: true
-            
-            Connections {
-                target: simulation
-                onInitialized: simulationCanvas.requestPaint()
+        Item
+        {
+            Canvas {
+                id: simulationCanvas
+                Layout.minimumWidth: 50
+                Layout.fillWidth: true
+                anchors.fill: parent 
+
+                Connections {
+                    target: simulation
+                    onInitialized: simulationCanvas.requestPaint()
+                }
+
+                onPaint: {
+                    var ctx = simulationCanvas.getContext('2d');
+                    ctx.save();
+                    ctx.clearRect(0, 0, simulationCanvas.width, simulationCanvas.height);                
+
+                    ctx.scale(mapView.zoom, mapView.zoom)
+                        
+                    for (var i = 0; i < simulation.particles.length; i++) {
+                        var x = simulation.particles[i].pose.position.x;
+                        var y = -simulation.particles[i].pose.position.y;
+                        ctx.beginPath()
+                        ctx.ellipse(x - 1, y - 1, 2, 2)
+                        ctx.stroke()
+                        ctx.fill()
+                    }
+                    ctx.restore();
+                }
             }
 
-            onPaint: {
-                var ctx = simulationCanvas.getContext('2d');
-                ctx.save();
-                ctx.clearRect(0, 0, simulationCanvas.width, simulationCanvas.height);                
-
-                for (var i = 0; i < simulation.particles.length; i++) {
-                    var x = simulation.particles[i].pose.position.x;
-                    var y = -simulation.particles[i].pose.position.y;
-                    ctx.beginPath()
-                    ctx.ellipse(x - 3, y - 3, 6, 6);
-                    ctx.stroke()
-                    ctx.fill()
-                }
-                ctx.restore();
+            ShapefileView {
+                id: mapView
+                anchors.fill: parent        
+                source: "indoor_1.csv"
+                transformOrigin : "TopLeft"             
             }
         }
     }
