@@ -40,6 +40,7 @@ public:
 
 private:
 	void recalculate();
+
 private:
 	double m_maxRange;
 	double m_lambda;

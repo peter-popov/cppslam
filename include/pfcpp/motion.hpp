@@ -8,36 +8,40 @@ namespace pfcpp
 
 
 template<typename S>
-auto get_x(const S& p) -> decltype(S::x)
+double get_x(const S& p)
 {
 	return p.x;
 }
 
 template<typename S>
-auto get_y(const S& p) -> decltype(S::y)
+double get_y(const S& p)
 {
 	return p.y;
 }
 
 template<typename S>
-auto get_dir(const S& p) -> decltype(S::direction)
+double get_dir(const S& p)
 {
 	return p.direction;
 }
 
 template<typename C>
-auto get_v(const C& p) -> decltype(C::v)
+double get_v(const C& p)
 {
 	return p.v;
 }
 
 template<typename C>
-auto get_w(const C& p) -> decltype(C::w)
+double get_w(const C& p)
 {
 	return p.w;
 }
 
-
+template<typename C>
+double get_t(const C&)
+{
+	return 1.0;
+}
 
 
 class VelocityMotionModelSampler

@@ -39,6 +39,20 @@ private:
 };
 
 
+class PointW: public QObject
+{
+	Q_OBJECT
+	Q_PROPERTY(QPointF coord READ coord)
+
+public:
+	PointW() {}
+	PointW(QPointF p) : m_coord(p) {}
+	
+	QPointF coord() {return m_coord;} 
+
+	QPointF m_coord;
+};
+
 class Pose: public QObject
 {
 	Q_OBJECT
@@ -68,6 +82,7 @@ private:
 };
 
 
+
 class Particle: public QObject
 {
 	Q_OBJECT
@@ -94,6 +109,7 @@ class VelocityControl: public QObject
 	Q_PROPERTY(double w READ w WRITE setW)
 	Q_PROPERTY(double t READ t WRITE setT)
 public:
+	VelocityControl():m_v(0), m_w(0), m_t(1) {}
 	double v() const {return m_v;}
 	double w() const {return m_w;}
 	double t() const {return m_t;}
@@ -118,8 +134,8 @@ class Simulation: public QObject
 
 
 	Q_PROPERTY(QQmlListProperty<Particle> particles READ particles)	
-	Q_PROPERTY(QQmlListProperty<QPointF> sensorBeams READ sensorBeams)
-	Q_PROPERTY(Pose currentPose READ currentPose)
+	Q_PROPERTY(QQmlListProperty<PointW> sensorBeams READ sensorBeams)
+	Q_PROPERTY(Pose* currentPose READ currentPose)
 			
 public:
 	Simulation();
@@ -127,13 +143,13 @@ public:
 	
 	MclSettings* mcl() const {return m_mcl;}
 	SensorSettingsModel* sensorModel() const {return m_sensorModel;}
-	Pose currentPose() const {return m_currentPose;}
+	Pose* currentPose() const {return m_currentPose.get();}
 	QQmlListProperty<Particle> particles();
-	QQmlListProperty<QPointF> sensorBeams(); 
+	QQmlListProperty<PointW> sensorBeams(); 
 
 public slots:
 	void init(QString mapUrl, Pose* startPosition);
-	void move(const VelocityControl& control);
+	void move(VelocityControl* control);
 	void setMcl(MclSettings* v) {m_mcl = v; emit mclChanged(v);}
 	void setSensorModel(SensorSettingsModel* v) {m_sensorModel = v; emit sensorModelChamged(v);}
 
@@ -149,75 +165,10 @@ private:
 private:
 	MclSettings* m_mcl;
 	SensorSettingsModel* m_sensorModel;
-	Pose m_currentPose;	
+	std::unique_ptr<Pose> m_currentPose;	
 	QList<std::shared_ptr<Particle>> m_particles;
-	QList<std::shared_ptr<QPointF>> m_sensorBeams;
+	QList<std::shared_ptr<PointW>> m_sensorBeams;
 	
 	struct Impl;
 	std::unique_ptr<Impl> pimpl;
 };
-
-
-/*
-struct SimulationConfig
-{
-	SimulationConfig(size_t particles = 1, size_t beams = 1):particle_count(particles),
-		beams_count(beams)
-	{		
-	}
-
-	size_t particle_count;
-	size_t beams_count;
-	pfcpp::SensorSetings sensor_settings;
-
-	enum
-	{
-		VELOCITY,
-		ODOMETRY
-	} motion_model;
-
-	enum 
-	{
-		MULTIMODAL, STRATIFIED, SYSTEMATIC
-	} resampler;
-
-
-	enum 
-	{
-		BEAM_RAY_TRACING, BEAM_END_POINT_MAP		
-	} sensor_model;
-
-	enum
-	{
-		MULTIPLICATION, LOG_SUM
-	} beam_combination;
-};
-
-struct Control
-{
-    double v;
-    double w;    
-};
-
-class SimulationModel
-{
-public:
-	SimulationModel( SimulationConfig config, std::tuple<double, double, double> start_pos, std::vector<Control> path, std::string map_url );
-
-	~SimulationModel();
-	std::tuple<QPointF, double> current_position() const;
-	std::vector<QPointF> measurment_end_points() const;
-
-	size_t particle_count( ) const;
-	std::tuple<QPointF, double> particle(size_t i) const;
-
-	std::vector<QPolygonF> export_map();
-
-	void update();
-
-private:
-	struct Impl;
-	std::unique_ptr<Impl> pimpl;
-	SimulationConfig config;
-};
-*/

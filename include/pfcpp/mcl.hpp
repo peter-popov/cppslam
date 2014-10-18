@@ -44,7 +44,7 @@ struct ParticleFilter
     }
 
 	template<typename SensorUpdate, typename Control>
-	void operator()(SensorUpdate sensor_update, Control control)
+	void operator()(SensorUpdate sensor_update, const Control& control)
 	{
 		for(auto& p: particles) 
 		{

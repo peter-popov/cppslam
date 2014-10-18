@@ -4,16 +4,8 @@ import QtQuick.Layouts 1.1
 import qdemo.models 1.0
 
 ColumnLayout {
-    SensorSettingsModel {
-        id: smodel
-        a0: 0.25
-        a1: 0.25
-        a2: 0.25
-        a3: 0.25
-        sigma: 10.0
-        lambda: 0.1
-        maxRange: 101
-    }
+
+	property SensorSettingsModel model
 
 	GridLayout {
 		id: layout

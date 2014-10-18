@@ -12,5 +12,5 @@ enable_testing()
 
 add_subdirectory(src)
 add_subdirectory(test)
-add_subdirectory(apps/pfdemo)
+#add_subdirectory(apps/pfdemo)
 add_subdirectory(apps/qdemo)

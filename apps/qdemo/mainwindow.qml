@@ -11,21 +11,40 @@ ApplicationWindow {
     width: 800
     height: 680    
 
-    
+    SensorSettingsModel {
+        id: smodel
+        a0: 0.25
+        a1: 0.25
+        a2: 0.25
+        a3: 0.25
+        sigma: 400.0
+        lambda: 0.1
+        maxRange: 500.0
+    }
+
 
     Pose {
         id: startPose
-        position.x: 100
-        position.y: 200        
+        position.x: 60
+        position.y: -150        
+    }
+
+    VelocityControl {
+        id: control
+        v: 1
+        w: 0
+        t: 1.0
     }
 
     MclSettings {
         id: mclSettings     
+        numberOfBeams: 6
     }
 
     Simulation {
         id: simulation
         mcl: mclSettings
+        sensorModel: smodel
     }
 
     SplitView {
@@ -45,6 +64,7 @@ ApplicationWindow {
                 }
                 Button {
                     text: "Step"
+                    onClicked: simulation.move(control)
                 }
             }
 
@@ -83,6 +103,7 @@ ApplicationWindow {
                 title: qsTr("Sensor settings")
                 SensorSettings{
                     id: sensor
+                    model: smodel
                 }  
             }
 
@@ -104,6 +125,7 @@ ApplicationWindow {
                 Connections {
                     target: simulation
                     onInitialized: simulationCanvas.requestPaint()
+                    onUpdated: simulationCanvas.requestPaint()
                 }
 
                 onPaint: {
@@ -111,16 +133,37 @@ ApplicationWindow {
                     ctx.save();
                     ctx.clearRect(0, 0, simulationCanvas.width, simulationCanvas.height);                
 
-                    ctx.scale(mapView.zoom, mapView.zoom)
+                    ctx.scale(mapView.zoom, mapView.zoom);
                         
                     for (var i = 0; i < simulation.particles.length; i++) {
                         var x = simulation.particles[i].pose.position.x;
                         var y = -simulation.particles[i].pose.position.y;
-                        ctx.beginPath()
-                        ctx.ellipse(x - 1, y - 1, 2, 2)
-                        ctx.stroke()
-                        ctx.fill()
+                        var a = simulation.particles[i].pose.orientation;
+                        ctx.beginPath();
+                        ctx.lineWidth = 0.3;
+                        ctx.ellipse(x - 1, y - 1, 2, 2);
+                        ctx.moveTo(x, y);
+                        var xd = x + 3 * Math.cos(a);
+                        var yd = y - 3 * Math.sin(a);
+                        ctx.lineTo(xd, yd);
+                        ctx.stroke();
                     }
+
+
+                    var pos_x = simulation.currentPose.position.x
+                    var pos_y = -simulation.currentPose.position.y
+                    var dashList = [12, 3, 3, 3];    
+                    for (var i = 0; i < simulation.sensorBeams.length; i++) {
+                        var x = simulation.sensorBeams[i].coord.x;
+                        var y = -simulation.sensorBeams[i].coord.y;
+                        ctx.beginPath();
+                        ctx.moveTo(pos_x, pos_y);
+                        ctx.lineTo(x, y);
+                        ctx.lineWidth = 0.3;
+                        ctx.strokeStyle = '#ff0000';
+                        ctx.stroke();    
+                    }
+
                     ctx.restore();
                 }
             }

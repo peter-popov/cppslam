@@ -6,14 +6,14 @@ BOOST_AUTO_TEST_SUITE(motion)
 
 struct State
 {
-	int x;
-	int y;
+	double x;
+	double y;
 	double direction;
 };
 
 struct Control
 {
-	int v;
+	double v;
 	double w;
 };
 

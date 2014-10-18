@@ -30,8 +30,5 @@ void SensorSettingsModel::recalculate()
 			m_samples[i] /= maxValue;
 		}
 	}
-
-
-	//std::cout << "recalculated " << std::endl;
 	emit modelChanged();
 }
