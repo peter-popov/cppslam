@@ -61,7 +61,21 @@ class Pose: public QObject
 public:	
 	Pose(QPointF p, double o): m_position(p), m_orientation(o) {}
 	Pose(): Pose({0, 0}, 0.0) {}
+	template<typename T>
+	Pose(std::initializer_list<T> l)
+	{
+		auto i = std::begin(l);
+		if (i != std::end(l))
+			m_position.setX(*i);
+		if (++i != std::end(l))
+			m_position.setY(*i);
+		if (++i != std::end(l))
+			m_orientation = *i;
+	}
+
 	Pose(const Pose& other) : Pose(other.position(), other.orientation()) {}
+
+
 	const Pose& operator=(const Pose& other) 
 	{ 
 		m_position = other.position();
@@ -125,6 +139,19 @@ private:
 	double m_t;
 };
 
+template<typename T>
+static T* list_at(QQmlListProperty<T> *property, int index)
+{
+	auto lst = (QList<std::shared_ptr<T>>*)property->data;
+	return lst->at(index).get();
+}
+
+template<typename T>
+static int list_count(QQmlListProperty<T> *property)
+{
+	auto lst = (QList<std::shared_ptr<Particle>>*)property->data;
+	return lst->size();	
+}
 
 class Simulation: public QObject
 {

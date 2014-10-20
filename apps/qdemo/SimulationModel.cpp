@@ -48,21 +48,6 @@ Pose toQPose(flatworld::Pose p)
 	return qp;
 }
 
-
-template<typename T>
-static T* list_at(QQmlListProperty<T> *property, int index)
-{
-	auto lst = (QList<std::shared_ptr<T>>*)property->data;
-	return lst->at(index).get();
-}
-
-template<typename T>
-static int list_count(QQmlListProperty<T> *property)
-{
-	auto lst = (QList<std::shared_ptr<Particle>>*)property->data;
-	return lst->size();	
-}
-
 Simulation::Simulation()
 : m_currentPose(new Pose())
 {

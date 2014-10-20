@@ -110,6 +110,10 @@ ApplicationWindow {
             GroupBox {
                 id: motionGroup
                 title: qsTr("Motion settings")
+                MotionSettings{
+                    Layout.fillWidth: true
+                    id: motion
+                } 
             }
 
         }
