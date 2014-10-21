@@ -28,40 +28,52 @@ ColumnLayout {
 	    
 
 	    Label { text: "\u03BB" }
-	    TextField {
-	    	id: lambda
-	    	text: smodel.lambda
-	    }
-	    Binding { target: smodel; property: "lambda"; value: lambda.text }
+	   	Slider {
+	   		id: lambda
+ 		   	value: smodel.lambda
+ 		   	minimumValue: 0.005
+ 		   	maximumValue: 0.2
+			stepSize: 0.001 
+		}
+	    Binding { target: smodel; property: "lambda"; value: lambda.value }
 		
 
 	   	Label { text: "Measurment" }
-	    TextField {
-	    	id: a0
-	    	text: smodel.a0
-	    }
-	    Binding { target: smodel; property: "a0"; value: a0.text }
+	   	Slider {
+	   		id: a0
+ 		   	value: smodel.a0
+ 		   	maximumValue: 1.0
+			stepSize: 0.01 
+		}
+
+	    Binding { target: smodel; property: "a0"; value: a0.value }
 
 	    Label { text: "Error" }
-	    TextField {
-	    	id: a1
-	    	text: smodel.a1
-	    }
-	    Binding { target: smodel; property: "a1"; value: a1.text }
+	   	Slider {
+	   		id: a1
+	   		value: smodel.a1
+ 		   	maximumValue: 1.0
+			stepSize: 0.01 
+		}
+	    Binding { target: smodel; property: "a1"; value: a1.value }
 
 	    Label { text: "No data"	}
-	    TextField {
-	    	id: a2
-	    	text: smodel.a2
-	    }
-	    Binding { target: smodel; property: "a2"; value: a2.text }
+	   	Slider {
+	   		id: a2
+ 		   	value: smodel.a2
+ 		   	maximumValue: 1.0
+			stepSize: 0.01 
+		}
+	    Binding { target: smodel; property: "a2"; value: a2.value }
 
 	    Label { text: "Close object" }
-	    TextField {
-	    	id: a3
-	    	text: smodel.a3
-	    }
-	    Binding { target: smodel; property: "a3"; value: a3.text }	
+	   	Slider {
+	   		id: a3
+ 		   	value: smodel.a3
+ 		   	maximumValue: 1.0
+			stepSize: 0.01 
+		}
+	    Binding { target: smodel; property: "a3"; value: a3.value }	
 	}
 
 

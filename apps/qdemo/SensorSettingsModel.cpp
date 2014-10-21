@@ -8,7 +8,11 @@ const QList<double>& SensorSettingsModel::samples() const
 
 void SensorSettingsModel::recalculate()
 {
-	pfcpp::BeamSensorModel model( {m_maxRange, {m_a0, m_a1, m_a2, m_a3}, m_sigma, m_lambda});
+	std::array<double, 4> params = {m_a0, m_a1, m_a2, m_a3};
+
+	for(auto& a: params) a /= m_a0 + m_a1 + m_a2 + m_a3;
+
+	pfcpp::BeamSensorModel model( {m_maxRange, params, m_sigma, m_lambda});
 
 	m_samples.clear();
 	auto delta = m_maxRange/100.0;
