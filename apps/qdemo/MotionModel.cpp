@@ -1,4 +1,5 @@
 #include "MotionModel.hpp"
+#include <pfcpp/motion.hpp>
 
 namespace pfcpp
 {
@@ -44,14 +45,9 @@ QQmlListProperty<Pose> MotionSample::moves()
 	return QQmlListProperty<Pose>(this, &m_moves, list_count<Pose>, list_at<Pose>);
 }
 
-void MotionSample::recalculate(Control ctrl, double sv, double bv, double sw, double bw)
+void MotionSample::recalculate(Control ctrl, std::array<double, 6> params)
 {
-	auto a0 = sv * (1 - bv);
-	auto a1 = sv * bv;
-	auto a2 = sw * (1 - bw);
-	auto a3 = sw * bw;
-
-	pfcpp::VelocityMotionModelSampler sampler{{a0, a1, a2, a3, 0.0, 0.0}};
+	pfcpp::VelocityMotionModelSampler sampler(std::move(params));
 
 	m_samples.clear();
 	for (int i = 0; i < 400; ++i)
@@ -76,11 +72,20 @@ MotionModel::MotionModel()
 {
 }
 
+std::array<double, 6> MotionModel::params()
+{
+	return {m_a0 * (1 - m_a1), 
+			m_a0 * m_a1, 
+			m_a2 * (1 - m_a3), 
+			m_a2 * m_a3, 
+			0.0, 
+			0.0};
+}
 
 void MotionModel::recalculate()
 {
-	m_straightMotion.recalculate({30, 0}, m_a0, m_a1, m_a2, m_a3);
-	m_rotationMotion.recalculate({30, 1.57079632679}, m_a0, m_a1, m_a2, m_a3);
+	m_straightMotion.recalculate({30, 0}, params());
+	m_rotationMotion.recalculate({30, 1.57079632679}, params());
 
 	emit modelChanged();
 }

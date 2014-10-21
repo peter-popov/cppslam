@@ -14,66 +14,66 @@ ColumnLayout {
 	    Label { text: "Max range" }
 	    TextField {
 	    	id: maxRange
-	    	text: smodel.maxRange
+	    	text: model.maxRange
 	    }
-	    Binding { target: smodel; property: "maxRange"; value: maxRange.text }
+	    Binding { target: model; property: "maxRange"; value: maxRange.text }
 
 
 	    Label { text: "\u03C3" }
 	    TextField {
 	    	id: sigma
-	    	text: smodel.sigma
+	    	text: model.sigma
 	    }
-		Binding { target: smodel; property: "sigma"; value: sigma.text }
+		Binding { target: model; property: "sigma"; value: sigma.text }
 	    
 
 	    Label { text: "\u03BB" }
 	   	Slider {
 	   		id: lambda
- 		   	value: smodel.lambda
+ 		   	value: model.lambda
  		   	minimumValue: 0.005
  		   	maximumValue: 0.2
 			stepSize: 0.001 
 		}
-	    Binding { target: smodel; property: "lambda"; value: lambda.value }
+	    Binding { target: model; property: "lambda"; value: lambda.value }
 		
 
 	   	Label { text: "Measurment" }
 	   	Slider {
 	   		id: a0
- 		   	value: smodel.a0
+ 		   	value: model.a0
  		   	maximumValue: 1.0
 			stepSize: 0.01 
 		}
 
-	    Binding { target: smodel; property: "a0"; value: a0.value }
+	    Binding { target: model; property: "a0"; value: a0.value }
 
 	    Label { text: "Error" }
 	   	Slider {
 	   		id: a1
-	   		value: smodel.a1
+	   		value: model.a1
  		   	maximumValue: 1.0
 			stepSize: 0.01 
 		}
-	    Binding { target: smodel; property: "a1"; value: a1.value }
+	    Binding { target: model; property: "a1"; value: a1.value }
 
 	    Label { text: "No data"	}
 	   	Slider {
 	   		id: a2
- 		   	value: smodel.a2
+ 		   	value: model.a2
  		   	maximumValue: 1.0
 			stepSize: 0.01 
 		}
-	    Binding { target: smodel; property: "a2"; value: a2.value }
+	    Binding { target: model; property: "a2"; value: a2.value }
 
 	    Label { text: "Close object" }
 	   	Slider {
 	   		id: a3
- 		   	value: smodel.a3
+ 		   	value: model.a3
  		   	maximumValue: 1.0
 			stepSize: 0.01 
 		}
-	    Binding { target: smodel; property: "a3"; value: a3.value }	
+	    Binding { target: model; property: "a3"; value: a3.value }	
 	}
 
 
@@ -85,7 +85,7 @@ ColumnLayout {
 	     
 
 	   	Connections {
-        	target: smodel
+        	target: model
         	onModelChanged: preview.requestPaint()
      	}
 
@@ -96,9 +96,9 @@ ColumnLayout {
 
 			ctx.beginPath();			
             ctx.moveTo(0,preview.height);
-            for (var i = 0; i < smodel.samples.length; i++) {
-            	var x = i * preview.width / smodel.samples.length
-            	var y = preview.height - smodel.samples[i] * preview.height
+            for (var i = 0; i < model.samples.length; i++) {
+            	var x = i * preview.width / model.samples.length
+            	var y = preview.height - model.samples[i] * preview.height
             	//!console.log("x = " + x + ", y = " + y)
             	ctx.lineTo(x,y);
             }

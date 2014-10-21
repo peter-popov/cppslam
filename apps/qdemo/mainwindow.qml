@@ -22,6 +22,13 @@ ApplicationWindow {
         maxRange: 500.0
     }
 
+    MotionModel {
+        id: mmodel
+        a0: 0.4
+        a1: 0.5
+        a2: 0.01
+        a3: 0.5
+    }
 
     Pose {
         id: startPose
@@ -38,13 +45,14 @@ ApplicationWindow {
 
     MclSettings {
         id: mclSettings     
-        numberOfBeams: 6
+        numberOfBeams: 12
     }
 
     Simulation {
         id: simulation
         mcl: mclSettings
         sensorModel: smodel
+        motionModel: mmodel
     }
 
     SplitView {
@@ -113,6 +121,7 @@ ApplicationWindow {
                 MotionSettings{
                     Layout.fillWidth: true
                     id: motion
+                    model: mmodel
                 } 
             }
 

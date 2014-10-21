@@ -7,6 +7,7 @@
 #include "SensorSettingsModel.hpp"
 
 class Simulation;
+class MotionModel;
 
 class MclSettings : public QObject
 {
@@ -157,7 +158,9 @@ class Simulation: public QObject
 {
 	Q_OBJECT	
 	Q_PROPERTY(MclSettings* mcl READ mcl WRITE setMcl NOTIFY mclChanged)	
-	Q_PROPERTY(SensorSettingsModel* sensorModel READ sensorModel WRITE setSensorModel NOTIFY sensorModelChamged)
+	Q_PROPERTY(SensorSettingsModel* sensorModel READ sensorModel WRITE setSensorModel NOTIFY sensorModelChanged)
+	Q_PROPERTY(MotionModel* motionModel READ motionModel WRITE setMotionModel NOTIFY motionModelChanged)
+
 
 
 	Q_PROPERTY(QQmlListProperty<Particle> particles READ particles)	
@@ -170,6 +173,8 @@ public:
 	
 	MclSettings* mcl() const {return m_mcl;}
 	SensorSettingsModel* sensorModel() const {return m_sensorModel;}
+	MotionModel* motionModel() const {return m_motionModel;}
+
 	Pose* currentPose() const {return m_currentPose.get();}
 	QQmlListProperty<Particle> particles();
 	QQmlListProperty<PointW> sensorBeams(); 
@@ -178,13 +183,15 @@ public slots:
 	void init(QString mapUrl, Pose* startPosition);
 	void move(VelocityControl* control);
 	void setMcl(MclSettings* v) {m_mcl = v; emit mclChanged(v);}
-	void setSensorModel(SensorSettingsModel* v) {m_sensorModel = v; emit sensorModelChamged(v);}
+	void setSensorModel(SensorSettingsModel* v) {m_sensorModel = v; emit sensorModelChanged(v);}
+	void setMotionModel(MotionModel* v) {m_motionModel = v; emit motionModelChanged(v);}
 
 signals:
 	void initialized();
 	void updated();
 	void mclChanged(MclSettings*);
-	void sensorModelChamged(SensorSettingsModel*);
+	void sensorModelChanged(SensorSettingsModel*);
+	void motionModelChanged(MotionModel*);
 
 private:
 	void updateParticlesList();
@@ -192,6 +199,8 @@ private:
 private:
 	MclSettings* m_mcl;
 	SensorSettingsModel* m_sensorModel;
+	MotionModel* m_motionModel;
+
 	std::unique_ptr<Pose> m_currentPose;	
 	QList<std::shared_ptr<Particle>> m_particles;
 	QList<std::shared_ptr<PointW>> m_sensorBeams;

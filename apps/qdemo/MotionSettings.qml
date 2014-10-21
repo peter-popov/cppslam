@@ -5,13 +5,8 @@ import qdemo.models 1.0
 
 ColumnLayout {
 
-    MotionModel {
-        id: smodel
-        a0: 0.4
-        a1: 0.5
-        a2: 0.01
-        a3: 0.5
-    }
+	property MotionModel model
+
 	
 	GridLayout {
 		id: layout
@@ -21,39 +16,39 @@ ColumnLayout {
 	    Label { text: "\u03C3(v)" }
 	   	Slider {
 	   		id: a0
- 		   	value: smodel.a0
+ 		   	value: model.a0
  		   	maximumValue: 10.0
 			stepSize: 0.1 
 		}
-	    Binding { target: smodel; property: "a0"; value: a0.value }
+	    Binding { target: model; property: "a0"; value: a0.value }
 
 	    Label { text: "v<->w" }
 	   	Slider {
 	   		id: a1
- 		   	value: smodel.a1
+ 		   	value: model.a1
  		   	maximumValue: 1.0
 			stepSize: 0.05 
 		}
-	    Binding { target: smodel; property: "a1"; value: a1.value }
+	    Binding { target: model; property: "a1"; value: a1.value }
 
 
 	    Label { text: "\u03C3(w)"	}
 	   	Slider {
 	   		id: a2
- 		   	value: smodel.a2
+ 		   	value: model.a2
  		   	maximumValue: 0.1
 			stepSize: 0.005
 		}
-	    Binding { target: smodel; property: "a2"; value: a2.value }
+	    Binding { target: model; property: "a2"; value: a2.value }
 
 	    Label { text: "v<->w" }
 	   	Slider {
 	   		id: a3
- 		   	value: smodel.a3
+ 		   	value: model.a3
  		   	maximumValue: 1.0
 			stepSize: 0.05 
 		}
-	    Binding { target: smodel; property: "a3"; value: a3.value }	
+	    Binding { target: model; property: "a3"; value: a3.value }	
 	}
 
 
@@ -66,7 +61,7 @@ ColumnLayout {
 	    Layout.fillWidth: true
 
 	   	Connections {
-        	target: smodel
+        	target: model
         	onModelChanged: preview.requestPaint()
      	}
 
@@ -96,25 +91,25 @@ ColumnLayout {
             ctx.scale(4, 4);
 
 			ctx.globalAlpha=0.5;
-            for (var i = 0; i < smodel.rotationMotion.samples.length; i++) {
-            	drawParticle(ctx, smodel.rotationMotion.samples[i], '#000000');
+            for (var i = 0; i < model.rotationMotion.samples.length; i++) {
+            	drawParticle(ctx, model.rotationMotion.samples[i], '#000000');
 			}
 
 			ctx.globalAlpha=1.0;
-            for (var i = 0; i < smodel.rotationMotion.moves.length; i++) {
-            	drawParticle(ctx, smodel.rotationMotion.moves[i], '#ff0000');
+            for (var i = 0; i < model.rotationMotion.moves.length; i++) {
+            	drawParticle(ctx, model.rotationMotion.moves[i], '#ff0000');
 			}        	
 
 			ctx.translate(50,0);
 			
 			ctx.globalAlpha=0.5;
-            for (var i = 0; i < smodel.straightMotion.samples.length; i++) {
-            	drawParticle(ctx, smodel.straightMotion.samples[i], '#000000');
+            for (var i = 0; i < model.straightMotion.samples.length; i++) {
+            	drawParticle(ctx, model.straightMotion.samples[i], '#000000');
 			}
 
 			ctx.globalAlpha=1.0;
-            for (var i = 0; i < smodel.straightMotion.moves.length; i++) {
-            	drawParticle(ctx, smodel.straightMotion.moves[i], '#ff0000');
+            for (var i = 0; i < model.straightMotion.moves.length; i++) {
+            	drawParticle(ctx, model.straightMotion.moves[i], '#ff0000');
 			}  
 
             ctx.restore();

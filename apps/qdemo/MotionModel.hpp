@@ -3,7 +3,6 @@
 #include <QtWidgets>
 #include <QtQml>
 #include "SimulationModel.hpp"
-#include <pfcpp/motion.hpp>
 
 class MotionSample : public QObject
 {
@@ -27,7 +26,7 @@ public:
 	QQmlListProperty<Pose> samples();
 	QQmlListProperty<Pose> moves();
 	
-	void recalculate(Control ctrl, double a0, double a1, double a2, double a3);
+	void recalculate(Control ctrl, std::array<double, 6> params);
 
 private:
 	std::unique_ptr<Pose> m_startPose;
@@ -58,6 +57,7 @@ public:
 	MotionSample* straightMotion() { return &m_straightMotion; }
 	MotionSample* rotationMotion() { return &m_rotationMotion; }
 
+	std::array<double, 6> params();
 
 	double a0() const { return m_a0; }
 	double a1() const { return m_a1; }
