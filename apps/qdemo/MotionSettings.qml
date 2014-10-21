@@ -9,8 +9,8 @@ ColumnLayout {
         id: smodel
         a0: 0.4
         a1: 0.5
-        a2: 0.05
-        a3: 0.1
+        a2: 0.01
+        a3: 0.5
     }
 	
 	GridLayout {
@@ -18,33 +18,42 @@ ColumnLayout {
 		columns: 2
 	    Layout.fillWidth: true
 
-	    Label { text: "v(v)" }
-	    TextField {
-	    	id: a0
-	    	text: smodel.a0
-	    }
-	    Binding { target: smodel; property: "a0"; value: a0.text }
+	    Label { text: "\u03C3(v)" }
+	   	Slider {
+	   		id: a0
+ 		   	value: smodel.a0
+ 		   	maximumValue: 10.0
+			stepSize: 0.1 
+		}
+	    Binding { target: smodel; property: "a0"; value: a0.value }
 
-	    Label { text: "v(w)" }
-	    TextField {
-	    	id: a1
-	    	text: smodel.a1
-	    }
-	    Binding { target: smodel; property: "a1"; value: a1.text }
+	    Label { text: "v<->w" }
+	   	Slider {
+	   		id: a1
+ 		   	value: smodel.a1
+ 		   	maximumValue: 1.0
+			stepSize: 0.05 
+		}
+	    Binding { target: smodel; property: "a1"; value: a1.value }
 
-	    Label { text: "w(v)"	}
-	    TextField {
-	    	id: a2
-	    	text: smodel.a2
-	    }
-	    Binding { target: smodel; property: "a2"; value: a2.text }
 
-	    Label { text: "w(w)" }
-	    TextField {
-	    	id: a3
-	    	text: smodel.a3
-	    }
-	    Binding { target: smodel; property: "a3"; value: a3.text }	
+	    Label { text: "\u03C3(w)"	}
+	   	Slider {
+	   		id: a2
+ 		   	value: smodel.a2
+ 		   	maximumValue: 0.1
+			stepSize: 0.005
+		}
+	    Binding { target: smodel; property: "a2"; value: a2.value }
+
+	    Label { text: "v<->w" }
+	   	Slider {
+	   		id: a3
+ 		   	value: smodel.a3
+ 		   	maximumValue: 1.0
+			stepSize: 0.05 
+		}
+	    Binding { target: smodel; property: "a3"; value: a3.value }	
 	}
 
 

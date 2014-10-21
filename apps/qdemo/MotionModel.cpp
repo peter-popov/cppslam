@@ -44,12 +44,17 @@ QQmlListProperty<Pose> MotionSample::moves()
 	return QQmlListProperty<Pose>(this, &m_moves, list_count<Pose>, list_at<Pose>);
 }
 
-void MotionSample::recalculate(Control ctrl, double a0, double a1, double a2, double a3)
+void MotionSample::recalculate(Control ctrl, double sv, double bv, double sw, double bw)
 {
-	pfcpp::VelocityMotionModelSampler sampler{{a0, a1, a2, a3, 0.0,0.0}};
+	auto a0 = sv * (1 - bv);
+	auto a1 = sv * bv;
+	auto a2 = sw * (1 - bw);
+	auto a3 = sw * bw;
+
+	pfcpp::VelocityMotionModelSampler sampler{{a0, a1, a2, a3, 0.0, 0.0}};
 
 	m_samples.clear();
-	for (int i = 0; i < 100; ++i)
+	for (int i = 0; i < 400; ++i)
 	{
 		auto p = sampler(*m_startPose, ctrl);
 		m_samples.push_back(std::make_shared<Pose>(p));
