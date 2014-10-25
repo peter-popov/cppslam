@@ -101,7 +101,7 @@ void Simulation::move(VelocityControl* control)
 {
 	
 	pfcpp::BeamSensorModel sensor_model({m_sensorModel->maxRange(), {m_sensorModel->a0(), m_sensorModel->a1(), m_sensorModel->a2(), m_sensorModel->a3()}, m_sensorModel->sigma(), m_sensorModel->lambda()});
-	pfcpp::VelocityMotionModelSampler movement(m_motionModel->params());
+	pfcpp::VelocityMotionModelSampler movement;
 	pimpl->robot_pos = movement(pimpl->robot_pos, *control);
 
 	auto actual_measument = flatworld::measurement(pimpl->robot_pos, pimpl->map, m_mcl->numberOfBeams(), m_sensorModel->maxRange());

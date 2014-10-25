@@ -108,7 +108,7 @@ ShapesMap::Point untuplify(T p)
 
 
 ShapesMap::ShapesMap()
-: bbox({0.0, 0.0}, {0.0, 0.0})
+: bbox(boost::geometry::make_inverse<Box>())
 {	
 }
 
@@ -135,6 +135,7 @@ void ShapesMap::add_wtk(std::string feature)
 {
 	Polygon poly;
 	bg::read_wkt(feature, poly);
+	bg::correct(poly);
     add(std::move(poly));
 }
 
@@ -160,11 +161,12 @@ bool ShapesMap::is_occupied(Position point) const
 	if (!bg::within(up, bbox)) return true;
 	for (auto& poly: objects)
 	{
-		if (bg::within(up, poly)) return true;
+		if (bg::within(up, poly)) 		
+			return true;
 	}
 	return false;
 }
-
+	
 
 
 auto ShapesMap::min_distance_towards(Position p, double heading, coord_t maximum_range) -> std::tuple<coord_t, Position>
