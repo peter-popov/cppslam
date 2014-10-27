@@ -1,15 +1,14 @@
 #pragma once
 
-#include <map/shapes_map.hpp>
+#include "shapes_map.hpp"
+#include <pfcpp/utils.hpp>
 #include <utility>
 #include <fstream>
 
-namespace flatworld
+namespace pfcpp
 {
-
-using namespace pfcpp::maps;
-
-double Pi = boost::math::constants::pi<double>();
+namespace maps
+{
 
 struct Pose
 {
@@ -88,4 +87,5 @@ auto load_scene(std::string wkt_csv_path)
 	return map;
 }
 
-}
+} //maps
+} //pfcpp

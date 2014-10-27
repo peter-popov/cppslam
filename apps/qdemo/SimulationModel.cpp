@@ -1,14 +1,14 @@
 #include "SimulationModel.hpp"
 
 #include <map/shapes_map.hpp>
+#include <map/flatworld.hpp>
 #include <pfcpp/mcl.hpp>
-#include <simulations/flatworld.hpp>
 #include <pfcpp/sensor.hpp>
 #include <pfcpp/motion.hpp>
 
 #include "MotionModel.hpp"
 
-using namespace pfcpp::maps;
+namespace flatworld = pfcpp::maps;
 
 namespace pfcpp
 {
@@ -112,7 +112,7 @@ void Simulation::move(VelocityControl* control)
     pimpl->pf([&](auto p){ return sensor_model(actual_measument, expected_measument(p));},
     		  *control);
 
-	std::vector<ShapesMap::Position> sense_points;
+	std::vector<pfcpp::maps::ShapesMap::Position> sense_points;
     std::tie(std::ignore, sense_points) = flatworld::measurement_with_coords(pimpl->robot_pos, pimpl->map, m_mcl->numberOfBeams(), m_sensorModel->maxRange());
  	m_sensorBeams.clear();
 	for (auto p: sense_points)

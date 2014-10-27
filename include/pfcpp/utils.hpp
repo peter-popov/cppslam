@@ -5,10 +5,7 @@
 namespace pfcpp
 {
 
-static struct {
-    template<class T> constexpr operator T()
-    { return (T)3.14159265359; }
-} Pi;
+static const double Pi = 3.14159265359;
 
 template<typename T>
 class GaussianNoise
