@@ -1,7 +1,5 @@
 #pragma once
 #include <cmath>
-#include <iterator>
-#include <iostream>
 #include <array>
 
 namespace pfcpp
@@ -17,23 +15,12 @@ struct SensorSetings
 
 class BeamSensorModel
 {
+	SensorSetings m_settings;
+
 public:
-	const double Pi = 3.14159;
-	const double max_range;
-	double sigma = 40;
-	double lambda = 0.0;
-	std::array<double, 4> a {0.005, 0.795, 0.2, 0.0};
 
 	BeamSensorModel(SensorSetings settings)
-	: max_range(settings.ray_length)
-	{
-		a = settings.a;
-		sigma = settings.sigma;
-		lambda = settings.lambda;
-	}
-
-	BeamSensorModel(double range)
-	: max_range(range)
+	: m_settings(settings)
 	{
 	}
 
@@ -53,10 +40,10 @@ public:
 
 	auto operator()(const double& measured, const double& expected)	
 	{		
-		auto p = a[0] * normal_measurment(measured, expected) + 
-				 a[1] * failure() +
-				 a[2] * error(measured) +
-				 a[3] * dynamic_objects(measured, expected);
+		auto p = m_settings.a[0] * normal_measurment(measured, expected) + 
+				 m_settings.a[1] * failure() +
+				 m_settings.a[2] * error(measured) +
+				 m_settings.a[3] * dynamic_objects(measured, expected);
 		return std::isnan(p) ? 0.0 : p;
 	}
 
@@ -64,25 +51,25 @@ private:
 
 	double normal_measurment(double z, double ze) const
 	{
-		if ( z > max_range || ze > max_range )
+		if ( z > m_settings.ray_length || ze > m_settings.ray_length )
 			return 0.0;
-		double sigma2 = sigma;
+		double sigma2 = m_settings.sigma;
 		double sqrt2sigma = std::sqrt(2*sigma2);
 		
 		auto p = std::exp(-0.5 * (z - ze) * (z - ze) / sigma2);
 		if (std::isnan(p)) p = 0.0;
-		auto norm = std::erf((max_range - ze)/sqrt2sigma) - std::erf(-ze/sqrt2sigma);
+		auto norm = std::erf((m_settings.ray_length - ze) / sqrt2sigma) - std::erf(-ze / sqrt2sigma);
 		return 2 * p / norm;	
 	}
 
 	double failure() const
 	{
-		return 1 / max_range;
+		return 1 / m_settings.ray_length;
 	}
 
 	double error(double z) const
 	{
-		if (fabs(z - max_range) < 0.001)
+		if (fabs(z - m_settings.ray_length) < 0.001)
 			return 1.0;
 		else
 			return 0.0;
@@ -93,7 +80,7 @@ private:
 		if (z >= ze)
 			return 0.0;
 		else
-			return exp(-lambda*z)*(1-exp(-lambda*ze));
+			return exp(-m_settings.lambda * z) * (1 - exp(-m_settings.lambda * ze));
 	}
 };
 

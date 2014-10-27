@@ -54,24 +54,33 @@ private:
 };
 
 
+template<typename P>
+void resample(const std::vector<P>& in, std::vector<P>& out)
+{
+
+}
+ 
+
+
 /**
  * Multimodal resampling
  */
 template<typename P>
-std::vector<P> resample(std::vector<P>& v)
+void multimodal_resample(const std::vector<P>& in, std::vector<P>& out)
 {
-	MultimodalDistribution<double> mmdist(v.begin(), v.end());
+	if (out.size() != in.size())
+		out.resize(in.size());
+
+	MultimodalDistribution<double> mmdist(in.begin(), in.end());
 	
 	std::uniform_real_distribution<double> unif(0., mmdist.total());
 	std::default_random_engine re{std::random_device{}()};      
   
- 	std::vector<P> res;
- 	for (int i = 0; i < v.size(); ++i)
+ 	for (int i = 0; i < in.size(); ++i)
 	{
 		auto r = unif(re);
-		res.push_back(v[mmdist.draw(r)]);
+		out[i] = in[mmdist.draw(r)];
 	}	
-	return res;	
 }
 
 
@@ -79,41 +88,44 @@ std::vector<P> resample(std::vector<P>& v)
  *
  */
  template<typename P>
- std::vector<P> stratified_resample(std::vector<P>& v)
+ void stratified_resample(const std::vector<P>& in, std::vector<P>& out)
  {
-	MultimodalDistribution<double> mmdist(v.begin(), v.end());	
+ 	if (out.size() != in.size())
+		out.resize(in.size());
+
+	MultimodalDistribution<double> mmdist(in.begin(), in.end());	
 
 	std::uniform_real_distribution<double> unif(0., 1.0);
 	std::default_random_engine re{std::random_device{}()};
 
-	std::vector<P> res;
- 	for (int i = 0; i < v.size(); ++i)
+	for (int i = 0; i < in.size(); ++i)
 	{
-		auto r = ((i-1) + unif(re))/v.size();
-		res.push_back(v[mmdist.draw_next(r)]);
-	}	
-	return res;	
+		auto r = ((i-1) + unif(re))/in.size();
+		out[i] = in[mmdist.draw(r)];
+	}
  }
 
  /**
  *
  */
  template<typename P>
- std::vector<P> systematic_resample(std::vector<P>& v)
+ void systematic_resample(const std::vector<P>& in, std::vector<P>& out)
  {
- 	MultimodalDistribution<double> mmdist(v.begin(), v.end());	
+ 	 if (out.size() != in.size())
+		out.resize(in.size());
+
+ 	MultimodalDistribution<double> mmdist(in.begin(), in.end());	
 
 	std::uniform_real_distribution<double> unif(0., 1.0);
 	std::default_random_engine re{std::random_device{}()};
+
 	auto u = unif(re);
 
-	std::vector<P> res;
- 	for (int i = 0; i < v.size(); ++i)
+ 	for (int i = 0; i < in.size(); ++i)
 	{
-		auto r = ((i-1) + u)/v.size();
-		res.push_back(v[mmdist.draw_next(r)]);
+		auto r = ((i-1) + u)/in.size();
+		out[i] = in[mmdist.draw_next(r)];
 	}	
-	return res;	
  }
 
 

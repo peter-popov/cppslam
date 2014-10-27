@@ -4,26 +4,21 @@
 
 #include "resample.hpp"
 #include "motion.hpp"
+#include "utils.hpp"
 
 
 namespace pfcpp
 {
 
+/**
+ * Particle representation
+ */
 template<typename State>
 struct Particle
 {
 	State state;
 	double weight;
 };
-
-
-template<typename S>
-void normilize(std::vector<Particle<S>>& v)
-{
-    decltype(Particle<S>::weight) total = 0;
-    for(auto& p: v) total += p.weight;
-    for(auto& p: v) p.weight = p.weight / total;
-}
 
 
 /**
@@ -51,15 +46,15 @@ struct ParticleFilter
 			p.state = motion_model(p.state, control);	
 			p.weight = sensor_update(p.state);
 		}
-
-		normilize(particles);
-		//
-		// @todo: think about implace resampling
-		particles = stratified_resample(particles);
+		normalize(particles.begin(), particles.end());
+		stratified_resample(particles, tmp_buffer);
+		std::swap(particles, tmp_buffer);
 	}
 
-	MotionModel motion_model;
-	std::vector<Particle<State>> particles;		
+	std::vector<Particle<State>> particles;
+
+	MotionModel motion_model;	
+	std::vector<Particle<State>> tmp_buffer;		
 };
 
 }
