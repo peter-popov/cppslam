@@ -76,7 +76,7 @@ auto fast_intersect(const P& p1, const P& p2, const P& p3, const P& p4, P& res, 
   		if(e>0 || e<f) return false;
   	}
 
-/*compute intersection coordinates*/
+	/*compute intersection coordinates*/
 
 	if(f==0) return false;
 	auto num = d*Ax;						/* numerator */
@@ -169,15 +169,18 @@ bool ShapesMap::is_occupied(Position point) const
 	
 
 
-auto ShapesMap::min_distance_towards(Position p, double heading, coord_t maximum_range) -> std::tuple<coord_t, Position>
+auto ShapesMap::min_distance_towards(Position p, double heading, coord_t maximum_range, coord_t noise) -> std::tuple<coord_t, Position>
 {
 	auto end = Position{std::get<0>(p) + cos(heading)*maximum_range, 
 						std::get<1>(p) + sin(heading)*maximum_range};	
 
+
 	query_result.resize(0);
-	rtree.query(bg::index::intersects(make_box(untuplify(p), untuplify(end))), std::back_inserter(query_result));
+	auto box = make_box(untuplify(p), untuplify(end));
+	bg::correct(box);
+	rtree.query(bg::index::intersects(box), std::back_inserter(query_result));
 	
-	auto min_dist = maximum_range;
+	auto min_dist = 2000.0;
 	auto touch_point = end;
 	intersection_result.resize(0);
 	ShapesMap::Position tmp;
@@ -196,7 +199,10 @@ auto ShapesMap::min_distance_towards(Position p, double heading, coord_t maximum
 		}
 	}	
 
-	return std::make_tuple(min_dist, touch_point);
+	noise = std::max(noise, -min_dist);
+
+	return std::make_tuple(min_dist + noise, Position{ std::get<0>(touch_point) + noise * cos(heading), 
+													std::get<1>(touch_point) + noise * sin(heading)});
 }
 
 }

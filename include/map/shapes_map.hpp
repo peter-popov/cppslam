@@ -42,7 +42,7 @@ public:
 
 	bool is_occupied(Position point) const;
 
-	std::tuple<coord_t, Position> min_distance_towards(Position p, double heading, coord_t max_range);
+	std::tuple<coord_t, Position> min_distance_towards(Position p, double heading, coord_t max_range, coord_t noise = 0);
 
 
 	std::vector<Polygon> objects;

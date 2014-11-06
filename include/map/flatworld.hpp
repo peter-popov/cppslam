@@ -20,6 +20,24 @@ struct Pose
 };
 
 
+auto random_pose_with_direction(const ShapesMap& map)
+{
+	static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_real_distribution<> d(0, 1);
+    int x, y, w, h;
+    std::tie(w, h) = map.size();
+    std::tie(x, y) = map.bottom_left();
+    
+    double px = x + d(gen) * w;
+    double py = y + d(gen) * h;
+
+    return std::vector<Pose>{ {px, py, 2*Pi*d(gen)},
+    	 	{px, py, 2*Pi*d(gen)},
+    	 	{px, py, 2*Pi*d(gen)},
+    		{px, py, 2*Pi*d(gen)}};    
+}
+
 
 auto random_pose(const ShapesMap& map)
 {
@@ -37,16 +55,18 @@ auto random_pose(const ShapesMap& map)
 
 
 auto measurement_with_coords(Pose p, ShapesMap& map, int num_rays, double max_range)
-{
+{	
+	GaussianNoise<double> noise(max_range/50);
+
 	std::vector<double> distances(num_rays, max_range);
 	std::vector<ShapesMap::Position> end_points(num_rays);
 	auto coord = std::make_tuple(p.x, p.y);
-	if ( !map.is_occupied(coord))
+	if (!map.is_occupied(coord))
 	{
 		auto da = 2 * Pi / num_rays;
 		for (int i = 0; i < num_rays; ++i)
 		{
-			std::tie(distances[i], end_points[i]) = map.min_distance_towards(coord, p.direction + i*da, max_range);		
+			std::tie(distances[i], end_points[i]) = map.min_distance_towards(coord, p.direction + i*da, max_range, noise());
 		}
 	}
 

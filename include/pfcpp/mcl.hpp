@@ -47,7 +47,7 @@ struct ParticleFilter
 			p.weight = sensor_update(p.state);
 		}
 		normalize(particles.begin(), particles.end());
-		stratified_resample(particles, tmp_buffer);
+		systematic_resample(particles, tmp_buffer);
 		std::swap(particles, tmp_buffer);
 	}
 

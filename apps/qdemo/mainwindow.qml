@@ -13,13 +13,13 @@ ApplicationWindow {
 
     SensorSettingsModel {
         id: smodel
-        a0: 0.25
-        a1: 0.25
+        a0: 0.05
+        a1: 0.75
         a2: 0.25
-        a3: 0.25
-        sigma: 10000.0
-        lambda: 0.1
-        maxRange: 2000.0
+        a3: 0.05
+        sigma: 2500.0
+        lambda: 0.01
+        maxRange: 1000.0
     }
 
     MotionModel {
@@ -32,8 +32,9 @@ ApplicationWindow {
 
     Pose {
         id: startPose
-        position.x: 300
-        position.y: -250        
+        position.x: 425
+        position.y: 700
+        orientation: 4.712385        
     }
 
     VelocityControl {
@@ -45,7 +46,7 @@ ApplicationWindow {
 
     MclSettings {
         id: mclSettings     
-        numberOfBeams: 12
+        numberOfBeams: 32
     }
 
     Simulation {
@@ -149,8 +150,6 @@ ApplicationWindow {
 
                     ctx.scale(mapView.zoom, mapView.zoom);                    
                     ctx.translate(mapView.translate.x, mapView.translate.y);
-                    console.log("Zoom: " + mapView.zoom);                    
-                    console.log("Translate: " + mapView.translate);
 
                     var particle_size = 2 / mapView.zoom;
                         
@@ -178,8 +177,8 @@ ApplicationWindow {
                         ctx.beginPath();
                         ctx.moveTo(pos_x, pos_y);
                         ctx.lineTo(x, y);
-                        ctx.lineWidth = 0.3;
-                        ctx.strokeStyle = '#ff0000';
+                        ctx.lineWidth = 1.0;
+                        ctx.strokeStyle = '#00ff00';
                         ctx.stroke();    
                     }
 
