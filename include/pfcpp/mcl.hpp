@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "types.hpp"
 #include "resample.hpp"
 #include "motion.hpp"
 #include "utils.hpp"
@@ -9,17 +10,6 @@
 
 namespace pfcpp
 {
-
-/**
- * Particle representation
- */
-template<typename State>
-struct Particle
-{
-	State state;
-	double weight;
-};
-
 
 /**
  * Implementation of the Particle Filter

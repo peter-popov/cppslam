@@ -8,14 +8,16 @@ struct State
 {
 	double x;
 	double y;
-	double direction;
+	double heading;
 };
 
 struct Control
 {
 	double v;
-	double w;
+	double w;	
 };
+
+double get_time(const Control&) {return 1.0;} 
 
 BOOST_AUTO_TEST_CASE( test_velocity_motion_model )
 {

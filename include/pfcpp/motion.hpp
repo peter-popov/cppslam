@@ -4,91 +4,91 @@
 #include <array>
 
 #include "utils.hpp"
+#include "types.hpp"
 
 namespace pfcpp
 {
 
 
-template<typename S>
-double get_x(const S& p)
-{
-	return p.x;
+template<typename Control>
+double get_velocity(const Control& c) {
+	return c.v;
 }
 
-template<typename S>
-double get_y(const S& p)
-{
-	return p.y;
-}
-
-template<typename S>
-double get_dir(const S& p)
-{
-	return p.direction;
-}
-
-template<typename C>
-double get_v(const C& p)
-{
-	return p.v;
-}
-
-template<typename C>
-double get_w(const C& p)
-{
+template<typename Control>
+double get_rotation(const Control& p) {
 	return p.w;
 }
 
-template<typename C>
-double get_t(const C&)
-{
-	return 1.0;
+template<typename Control>
+double get_time(const Control& c) {
+	return c.time;
 }
 
-
-class VelocityMotionModelSampler
-{
+/**
+ * Velocity based model
+ */
+class VelocityMotionModelSampler {
 public:
 	VelocityMotionModelSampler()
-	: VelocityMotionModelSampler({0.0,0.0,0.0,0.0,0.0,0.0})
-	{		
+	: VelocityMotionModelSampler({0.0,0.0,0.0,0.0,0.0,0.0}) {		
 	}
 
 	VelocityMotionModelSampler(std::array<double, 6>&& params)
-	: a(std::forward<std::array<double, 6>>(params))
-	{		
+	: a(std::forward<std::array<double, 6>>(params)) {		
 	}
 
-	template<typename State, typename Control>
-	State operator()(const State& s, const Control& control)
-	{		
+	template<typename Pose, typename Control>
+	Pose operator()(const Pose& pose, const Control& control) {		
+		auto v = get_velocity(control);
+		auto w = get_rotation(control);
+		auto t = get_time(control);
 		// Noisy control
-		auto v = get_v(control) + noise(a[0] * fabs(get_v(control)) + a[1] * fabs(get_w(control)));
-		auto w = get_w(control) + noise(a[2] * fabs(get_v(control)) + a[3] * fabs(get_w(control)));
-		auto gm = noise(a[4] * fabs(get_v(control)) + a[5] * fabs(get_w(control)));
-		auto dt = get_t(control);
+		auto noisy_v = v + noise(a[0] * v + a[1] * w);
+		auto noisy_w = w + noise(a[2] * v + a[3] * w);
+		auto gm = noise(a[4] * v + a[5] * w);
+		auto dt = get_time(control);
 
-		// Get current state parameters
-		auto heading = get_dir(s);
-		auto x = get_x(s);
-		auto y = get_y(s);
-
-		auto dv_dw = v / w;
-			
+		auto heading = get_heading(pose);
+		auto dv_dw = noisy_v / noisy_w;			
 		if (std::isnormal(dv_dw))
 		{
-			x += -dv_dw * (std::sin(heading) - std::sin(heading + w * dt));
-			y +=  dv_dw * (std::cos(heading) - std::cos(heading + w * dt));
+			return { get_x(pose) - dt * dv_dw * (std::sin(heading) - std::sin(heading + noisy_w * dt)),
+					 get_y(pose) + dt * dv_dw * (std::cos(heading) - std::cos(heading + noisy_w * dt)),
+					 heading + w * dt + gm };	
 		}
 		else
 		{
-			x += v * std::cos(heading);
-			y += v * std::sin(heading);	
+			return { get_x(pose) + dt * noisy_v * std::cos(heading),
+					 get_y(pose) + dt * noisy_v * std::sin(heading),
+					 heading + w * dt + gm };	
 		}
-		heading += + w * dt + gm;
- 		return {x, y, heading};	 
+	} 
+
+private:
+	///noise params
+	std::array<double, 6> a;
+	GaussianNoise<double> noise;
+};
+
+
+/**
+ * Odometry model
+ */
+class OdometryMotionModelSampler {
+public:
+	OdometryMotionModelSampler()
+	: OdometryMotionModelSampler({0.0,0.0,0.0,0.0,0.0,0.0}) {		
 	}
 
+	OdometryMotionModelSampler(std::array<double, 6>&& params)
+	: a(std::forward<std::array<double, 6>>(params)) {		
+	}
+
+	template<typename Pose>
+	Pose operator()(const Pose& start, const Pose& end) {		
+		return { 0, 0, 0};			
+	} 
 
 private:
 	///noise params

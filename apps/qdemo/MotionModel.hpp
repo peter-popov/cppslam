@@ -16,6 +16,7 @@ class MotionSample : public QObject
 	{
 		double v;
 		double w;
+		double time = 1.0;
 	};
 public:
 	MotionSample();

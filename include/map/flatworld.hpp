@@ -13,7 +13,7 @@ namespace maps
 struct Pose
 {
 	double x, y;
-	double direction;
+	double heading;
 
 	operator ShapesMap::Point() const {return {x,y};}
 	operator ShapesMap::Position() const {return ShapesMap::Position{x,y};}
@@ -66,7 +66,7 @@ auto measurement_with_coords(Pose p, ShapesMap& map, int num_rays, double max_ra
 		auto da = 2 * Pi / num_rays;
 		for (int i = 0; i < num_rays; ++i)
 		{
-			std::tie(distances[i], end_points[i]) = map.min_distance_towards(coord, p.direction + i*da, max_range, noise());
+			std::tie(distances[i], end_points[i]) = map.min_distance_towards(coord, p.heading + i*da, max_range, noise());
 		}
 	}
 
@@ -83,7 +83,7 @@ auto measurement(Pose p, ShapesMap& map, int num_rays, double max_range)
 		auto da = 2 * Pi / num_rays;
 		for (int i = 0; i < num_rays; ++i)
 		{
-			std::tie(distances[i], std::ignore) = map.min_distance_towards(coord, p.direction + i*da, max_range);		
+			std::tie(distances[i], std::ignore) = map.min_distance_towards(coord, p.heading + i*da, max_range);		
 		}
 	}
 	return distances;

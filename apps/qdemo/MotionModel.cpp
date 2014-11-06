@@ -1,28 +1,21 @@
 #include "MotionModel.hpp"
 #include <pfcpp/motion.hpp>
 
-namespace pfcpp
-{
-
-template<>
 double get_x(const Pose& p)
 {
 	return p.position().x();
 }
 
-template<>
 double get_y(const Pose& p)
 {
 	return p.position().y();
 }
 
-template<>
-double get_dir(const Pose& p)
+double get_heading(const Pose& p)
 {
 	return p.orientation();
 }
 
-}
 
 MotionSample::MotionSample()
 : m_startPose(new Pose({5,5}, 0.0))

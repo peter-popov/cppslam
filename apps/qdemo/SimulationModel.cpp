@@ -15,19 +15,19 @@ namespace pfcpp
 
 
 template<>
-double get_v(const VelocityControl& p)
+double get_velocity(const VelocityControl& p)
 {
 	return p.v();
 }
 
 template<>
-double get_w(const VelocityControl& p)
+double get_rotation(const VelocityControl& p)
 {
 	return p.w();
 }
 
 template<>
-double get_t(const VelocityControl& p)
+double get_time(const VelocityControl& p)
 {
 	return p.t();
 }
@@ -46,7 +46,7 @@ Pose toQPose(flatworld::Pose p)
 {
 	Pose qp;
 	qp.setPosition({p.x, p.y});
-	qp.setOrientation(p.direction);
+	qp.setOrientation(p.heading);
 	return qp;
 }
 
@@ -79,7 +79,7 @@ void Simulation::init(QString mapUrl, Pose* pose)
 	pimpl->map = flatworld::load_scene(mapUrl.toStdString());
 	pimpl->robot_pos.x = startPosition.position().x();
 	pimpl->robot_pos.y = startPosition.position().y();
-	pimpl->robot_pos.direction = startPosition.orientation();
+	pimpl->robot_pos.heading = startPosition.orientation();
     
     std::vector<flatworld::Pose> states;
     for (int i = 0; states.size() < m_mcl->numberOfParticles(); ++i)
