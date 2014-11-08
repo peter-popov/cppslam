@@ -59,14 +59,14 @@ template<typename T>
 class MultimodalDistribution
 {
 public:	
-	template<typename I>
-	MultimodalDistribution(I from, I to)
+	template<typename I, typename WeightFunction>
+	MultimodalDistribution(I from, I to, WeightFunction weight)
 	{
 		acc.reserve(std::distance(from, to));
 		T total = 0;
 		for(; from != to; ++from)
 		{
-			total += get_weight(*from);
+			total += weight(*from);
 			acc.push_back(total);
 		}
 		last_iter = acc.begin();

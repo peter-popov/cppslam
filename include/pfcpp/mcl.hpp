@@ -14,13 +14,11 @@ namespace pfcpp
 /**
  * Implementation of the Particle Filter
  */
-template<typename State, 
-		 typename MotionModel = VelocityMotionModelSampler>
+template<typename State>
 struct ParticleFilter
 {
 	ParticleFilter() {}
-	ParticleFilter(std::vector<State> states, const MotionModel& model)
-	: motion_model(model)
+	ParticleFilter(std::vector<State> states)
 	{
 		for (auto& s: states)
 		{
@@ -28,22 +26,20 @@ struct ParticleFilter
 		}
     }
 
-	template<typename SensorUpdate, typename Control>
-	void operator()(SensorUpdate sensor_update, const Control& control)
+	template<typename SensorUpdate, typename MotionUpdate>
+	void operator()(SensorUpdate sensor_update, const MotionUpdate& motion_update)
 	{
 		for(auto& p: particles) 
 		{
-			p.state = motion_model(p.state, control);	
+			p.state = motion_update(p.state);	
 			p.weight = sensor_update(p.state);
 		}
 		normalize(particles.begin(), particles.end());
-		systematic_resample(particles, tmp_buffer);
+		stratified_resample(particles, tmp_buffer);
 		std::swap(particles, tmp_buffer);
 	}
 
 	std::vector<Particle<State>> particles;
-
-	MotionModel motion_model;	
 	std::vector<Particle<State>> tmp_buffer;		
 };
 

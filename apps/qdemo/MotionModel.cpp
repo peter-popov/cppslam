@@ -38,23 +38,20 @@ QQmlListProperty<Pose> MotionSample::moves()
 	return QQmlListProperty<Pose>(this, &m_moves, list_count<Pose>, list_at<Pose>);
 }
 
-void MotionSample::recalculate(Control ctrl, std::array<double, 6> params)
+void MotionSample::recalculate(Pose end_pose, std::array<double, 4> params)
 {
-	pfcpp::VelocityMotionModelSampler sampler(std::move(params));
+	//pfcpp::VelocityMotionModelSampler sampler(std::move(params));
+	pfcpp::OdometryMotionModelSampler sampler(params);
+
+	m_moves.clear();
+	m_moves.push_back(std::make_shared<Pose>(*m_startPose));
+	m_moves.push_back(std::make_shared<Pose>(end_pose));
 
 	m_samples.clear();
 	for (int i = 0; i < 400; ++i)
 	{
-		auto p = sampler(*m_startPose, ctrl);
+		auto p = sampler(*m_startPose, end_pose);
 		m_samples.push_back(std::make_shared<Pose>(p));
-	}
-
-	m_moves.clear();
-	pfcpp::VelocityMotionModelSampler exact;
-	for (int i = 0; i <= 5; ++i)
-	{
-		auto p = exact(*m_startPose, Control{ctrl.v*i/5.0, ctrl.w*i/5.0});
-		m_moves.push_back(std::make_shared<Pose>(p));
 	}
 }
 
@@ -65,20 +62,18 @@ MotionModel::MotionModel()
 {
 }
 
-std::array<double, 6> MotionModel::params()
+std::array<double, 4> MotionModel::params()
 {
-	return {m_a0 * (1 - m_a1), 
-			m_a0 * m_a1, 
-			m_a2 * (1 - m_a3), 
-			m_a2 * m_a3, 
-			0.0, 
-			0.0};
+	return {m_a0, 
+			m_a1, 
+			m_a2, 
+			m_a3};
 }
 
 void MotionModel::recalculate()
 {
-	m_straightMotion.recalculate({30, 0}, params());
-	m_rotationMotion.recalculate({30, 1.57079632679}, params());
-
+	m_rotationMotion.recalculate({{25, 25}, 1.57079632679}, params());
+	m_straightMotion.recalculate({{5, 30}, 1.57079632679}, params());
+	
 	emit modelChanged();
 }

@@ -12,12 +12,6 @@ class MotionSample : public QObject
 	Q_PROPERTY(QQmlListProperty<Pose> samples READ samples)
 	Q_PROPERTY(QQmlListProperty<Pose> moves READ moves)
 
-	struct Control
-	{
-		double v;
-		double w;
-		double time = 1.0;
-	};
 public:
 	MotionSample();
 
@@ -27,7 +21,7 @@ public:
 	QQmlListProperty<Pose> samples();
 	QQmlListProperty<Pose> moves();
 	
-	void recalculate(Control ctrl, std::array<double, 6> params);
+	void recalculate(Pose end_pose, std::array<double, 4> params);
 
 private:
 	std::unique_ptr<Pose> m_startPose;
@@ -48,7 +42,6 @@ class MotionModel : public QObject
 	Q_PROPERTY(double a2 READ a2 WRITE setA2 NOTIFY modelChanged)
 	Q_PROPERTY(double a3 READ a3 WRITE setA3 NOTIFY modelChanged)
 
-
 signals:
 	void modelChanged();
 
@@ -58,7 +51,7 @@ public:
 	MotionSample* straightMotion() { return &m_straightMotion; }
 	MotionSample* rotationMotion() { return &m_rotationMotion; }
 
-	std::array<double, 6> params();
+	std::array<double, 4> params();
 
 	double a0() const { return m_a0; }
 	double a1() const { return m_a1; }

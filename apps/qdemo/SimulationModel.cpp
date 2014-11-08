@@ -92,7 +92,7 @@ void Simulation::init(QString mapUrl, Pose* pose)
 	    }
     }
 
-    pimpl->pf = pfcpp::ParticleFilter<flatworld::Pose>(states, {{0.4,0.5,0.05,0.1,0.0,0.0}});
+    pimpl->pf = pfcpp::ParticleFilter<flatworld::Pose>(states);
 
     updateParticlesList();
     emit initialized();
@@ -101,7 +101,13 @@ void Simulation::init(QString mapUrl, Pose* pose)
 
 void Simulation::move(VelocityControl* control)
 {
-	
+    if (!m_motionModel || !m_sensorModel)
+    {
+    	return;
+    }
+
+	pfcpp::OdometryMotionModelSampler motion_model(m_motionModel->params());
+
 	pfcpp::BeamSensorModel sensor_model({m_sensorModel->maxRange(), {m_sensorModel->a0(), m_sensorModel->a1(), m_sensorModel->a2(), m_sensorModel->a3()}, m_sensorModel->sigma(), m_sensorModel->lambda()});
 	pfcpp::VelocityMotionModelSampler movement;
 	pimpl->robot_pos = movement(pimpl->robot_pos, *control);
@@ -112,8 +118,8 @@ void Simulation::move(VelocityControl* control)
 	auto expected_measument = [&](auto p){ return flatworld::measurement(p, 
 		pimpl->map, m_mcl->numberOfBeams(), m_sensorModel->maxRange()); };
 
-    pimpl->pf([&](auto p){ return sensor_model(actual_measument, expected_measument(p));},
-    		  *control);
+    pimpl->pf([&](auto p){ return sensor_model(actual_measument, expected_measument(p)); },
+    		  [&](auto p){ return motion_model(p, movement(p, *control)); });
 	
  	m_sensorBeams.clear();
 	for (auto p: sense_points)

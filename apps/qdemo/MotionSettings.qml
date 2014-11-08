@@ -13,39 +13,39 @@ ColumnLayout {
 		columns: 2
 	    Layout.fillWidth: true
 
-	    Label { text: "\u03C3(v)" }
+	    Label { text: "θ(θ)" }
 	   	Slider {
 	   		id: a0
  		   	value: model.a0
- 		   	maximumValue: 10.0
-			stepSize: 0.1 
+ 		   	maximumValue: 1.0
+			stepSize: 0.01 
 		}
 	    Binding { target: model; property: "a0"; value: a0.value }
 
-	    Label { text: "v<->w" }
+	    Label { text: "θ(r)" }
 	   	Slider {
 	   		id: a1
  		   	value: model.a1
- 		   	maximumValue: 1.0
-			stepSize: 0.05 
+ 		   	maximumValue: 0.05
+			stepSize: 0.001 
 		}
 	    Binding { target: model; property: "a1"; value: a1.value }
 
 
-	    Label { text: "\u03C3(w)"	}
+	    Label { text: "r(r)"	}
 	   	Slider {
 	   		id: a2
  		   	value: model.a2
- 		   	maximumValue: 0.1
-			stepSize: 0.005
+ 		   	maximumValue: 0.5
+			stepSize: 0.01
 		}
 	    Binding { target: model; property: "a2"; value: a2.value }
 
-	    Label { text: "v<->w" }
+	    Label { text: "r(θ)" }
 	   	Slider {
 	   		id: a3
  		   	value: model.a3
- 		   	maximumValue: 1.0
+ 		   	maximumValue: 5.0
 			stepSize: 0.05 
 		}
 	    Binding { target: model; property: "a3"; value: a3.value }	

@@ -19,7 +19,7 @@ void resample(const std::vector<P>& in, std::vector<P>& out, Sampler sampler)
 	if (out.size() != in.size())
 		out.resize(in.size());
 
-	MultimodalDistribution<double> mmdist(in.begin(), in.end());
+	MultimodalDistribution<double> mmdist(in.begin(), in.end(), [](const auto& x){return get_weight(x);});
 	  
  	for (int i = 0; i < in.size(); ++i)
 		out[i] = in[mmdist.draw(sampler(i))];

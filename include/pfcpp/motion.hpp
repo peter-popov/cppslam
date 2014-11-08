@@ -51,14 +51,12 @@ public:
 
 		auto heading = get_heading(pose);
 		auto dv_dw = noisy_v / noisy_w;			
-		if (std::isnormal(dv_dw))
-		{
+		if (std::isnormal(dv_dw)) {
 			return { get_x(pose) - dt * dv_dw * (std::sin(heading) - std::sin(heading + noisy_w * dt)),
 					 get_y(pose) + dt * dv_dw * (std::cos(heading) - std::cos(heading + noisy_w * dt)),
 					 heading + w * dt + gm };	
 		}
-		else
-		{
+		else {
 			return { get_x(pose) + dt * noisy_v * std::cos(heading),
 					 get_y(pose) + dt * noisy_v * std::sin(heading),
 					 heading + w * dt + gm };	
@@ -77,22 +75,48 @@ private:
  */
 class OdometryMotionModelSampler {
 public:
+
+	typedef std::array<double, 4> NoiseParams;
+
 	OdometryMotionModelSampler()
-	: OdometryMotionModelSampler({0.0,0.0,0.0,0.0,0.0,0.0}) {		
+	: OdometryMotionModelSampler({0.0,0.0,0.0,0.0}) {		
 	}
 
-	OdometryMotionModelSampler(std::array<double, 6>&& params)
-	: a(std::forward<std::array<double, 6>>(params)) {		
+	OdometryMotionModelSampler(const NoiseParams& params)
+	: a(params) {		
+	}
+
+	OdometryMotionModelSampler(NoiseParams&& params)
+	: a(std::forward<NoiseParams>(params)) {		
 	}
 
 	template<typename Pose>
 	Pose operator()(const Pose& start, const Pose& end) {		
-		return { 0, 0, 0};			
+	
+		auto dx = get_x(end) - get_x(start);
+		auto dy = get_y(end) - get_y(start);
+		
+		auto start_rotation = std::atan2(dy, dx) - get_heading(start);
+		auto transition = std::sqrt(dx * dx + dy * dy);
+		auto end_rotation = get_heading(end) - get_heading(start) - start_rotation;
+		//
+		//Apply noise
+		double params[] = { a[0] * start_rotation + a[1] * transition,
+						    a[2] * transition + a[3] * (start_rotation + end_rotation),
+						    a[0] * end_rotation + a[1] * transition };
+		
+		start_rotation -= noise(params[0]);
+		transition -= noise(params[1]);
+		end_rotation -= noise(params[2]);
+
+		return { get_x(start) + transition * std::cos(get_heading(start) + start_rotation), 
+				 get_y(start) + transition * std::sin(get_heading(start) + start_rotation),
+				 get_heading(start) + start_rotation + end_rotation };		
 	} 
 
 private:
 	///noise params
-	std::array<double, 6> a;
+	NoiseParams a;
 	GaussianNoise<double> noise;
 };
 

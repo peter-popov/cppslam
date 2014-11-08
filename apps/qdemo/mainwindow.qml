@@ -24,10 +24,10 @@ ApplicationWindow {
 
     MotionModel {
         id: mmodel
-        a0: 0.4
-        a1: 0.5
-        a2: 0.01
-        a3: 0.5
+        a0: 0.1
+        a1: 0.005
+        a2: 0.05
+        a3: 1.0
     }
 
     Pose {
