@@ -14,17 +14,17 @@ ApplicationWindow {
     SensorSettingsModel {
         id: smodel
         a0: 0.05
-        a1: 0.75
+        a1: 0.15
         a2: 0.25
-        a3: 0.05
+        a3: 0.01
         sigma: 2500.0
         lambda: 0.01
-        maxRange: 1000.0
+        maxRange: 500.0
     }
 
     MotionModel {
         id: mmodel
-        a0: 0.1
+        a0: 0.2
         a1: 0.005
         a2: 0.05
         a3: 1.0
