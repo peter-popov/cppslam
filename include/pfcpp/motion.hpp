@@ -1,8 +1,6 @@
 #pragma once
 
-#include <random>
 #include <array>
-
 #include "utils.hpp"
 #include "types.hpp"
 
@@ -54,12 +52,12 @@ public:
 		if (std::isnormal(dv_dw)) {
 			return { get_x(pose) - dt * dv_dw * (std::sin(heading) - std::sin(heading + noisy_w * dt)),
 					 get_y(pose) + dt * dv_dw * (std::cos(heading) - std::cos(heading + noisy_w * dt)),
-					 heading + w * dt + gm };	
+					 normal_angle(heading + w * dt + gm) };	
 		}
 		else {
 			return { get_x(pose) + dt * noisy_v * std::cos(heading),
 					 get_y(pose) + dt * noisy_v * std::sin(heading),
-					 heading + w * dt + gm };	
+					 normal_angle(heading + w * dt + gm) };	
 		}
 	} 
 
@@ -96,9 +94,9 @@ public:
 		auto dx = get_x(end) - get_x(start);
 		auto dy = get_y(end) - get_y(start);
 		
-		auto start_rotation = std::atan2(dy, dx) - get_heading(start);
+		auto start_rotation = normal_angle(std::atan2(dy, dx) - get_heading(start));
 		auto transition = std::sqrt(dx * dx + dy * dy);
-		auto end_rotation = get_heading(end) - get_heading(start) - start_rotation;
+		auto end_rotation = normal_angle(get_heading(end) - get_heading(start) - start_rotation);
 		//
 		//Apply noise
 		double params[] = { a[0] * start_rotation + a[1] * transition,
@@ -111,7 +109,7 @@ public:
 
 		return { get_x(start) + transition * std::cos(get_heading(start) + start_rotation), 
 				 get_y(start) + transition * std::sin(get_heading(start) + start_rotation),
-				 get_heading(start) + start_rotation + end_rotation };		
+				 normal_angle(get_heading(start) + start_rotation + end_rotation) };		
 	} 
 
 private:

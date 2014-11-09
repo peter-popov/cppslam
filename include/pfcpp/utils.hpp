@@ -116,4 +116,11 @@ void normalize(I start, I end, decltype(std::declval<I>()->weight) dummy = 0)
 		p->weight /= total;
 }
 
+inline
+auto normal_angle(double angle) {
+	while(angle < 0) angle += 2*Pi;
+	while(angle > 2*Pi) angle -= 2*Pi;
+	return angle;
+}
+
 }

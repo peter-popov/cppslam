@@ -93,7 +93,7 @@ ApplicationWindow {
                        id: particlesCount
                        Layout.minimumWidth: 70
                        maximumValue: 20000
-                       minimumValue: 100
+                       minimumValue: 10
                        stepSize: 100
                     }
                     Binding { target: simulation; property: "mcl.numberOfParticles"; value: particlesCount.value }
@@ -162,7 +162,7 @@ ApplicationWindow {
                         ctx.ellipse(x - particle_size, y - particle_size, 2*particle_size, 2*particle_size);
                         ctx.moveTo(x, y);
                         var xd = x + 3 * particle_size * Math.cos(a);
-                        var yd = y - 3 * particle_size * Math.sin(a);
+                        var yd = y + 3 * particle_size * Math.sin(a);
                         ctx.lineTo(xd, yd);
                         ctx.stroke();
                     }
