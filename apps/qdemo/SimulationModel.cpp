@@ -84,7 +84,7 @@ void Simulation::init(QString mapUrl, Pose* pose)
     std::vector<flatworld::Pose> states;
     for (int i = 0; states.size() < m_mcl->numberOfParticles(); ++i)
     {
-        for (auto p: flatworld::random_pose_with_direction(pimpl->map))
+    	for (auto p: flatworld::random_pose_with_direction(pimpl->map))
         {
 	        if (pimpl->map.is_occupied(std::make_tuple(p.x,p.y)))
 	            continue;

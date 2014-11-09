@@ -1,6 +1,7 @@
 #pragma once
 #include <cmath>
 #include <array>
+#include "utils.hpp"
 
 namespace pfcpp
 {
@@ -56,10 +57,9 @@ private:
 		double sigma2 = m_settings.sigma;
 		double sqrt2sigma = std::sqrt(2*sigma2);
 		
-		auto p = std::exp(-0.5 * (z - ze) * (z - ze) / sigma2);
-		if (std::isnan(p)) p = 0.0;
-		auto norm = std::erf((m_settings.ray_length - ze) / sqrt2sigma) - std::erf(-ze / sqrt2sigma);
-		return 2 * p / norm;	
+		auto p = std::exp(-0.5 * (z - ze) * (z - ze) / sigma2) / sqrt2sigma;
+		auto norm = std::erf((m_settings.ray_length - ze) / sqrt2sigma) + std::erf(ze / sqrt2sigma);
+		return p / norm;	
 	}
 
 	double failure() const
@@ -80,7 +80,7 @@ private:
 		if (z >= ze)
 			return 0.0;
 		else
-			return exp(-m_settings.lambda * z) * (1 - exp(-m_settings.lambda * ze));
+			return m_settings.lambda * exp(-m_settings.lambda * z) * (1 - exp(-m_settings.lambda * ze));
 	}
 };
 

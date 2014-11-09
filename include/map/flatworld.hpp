@@ -56,7 +56,7 @@ auto random_pose(const ShapesMap& map)
 
 auto measurement_with_coords(Pose p, ShapesMap& map, int num_rays, double max_range)
 {	
-	GaussianNoise<double> noise(max_range/50);
+	GaussianNoise<double> noise(max_range/20);
 
 	std::vector<double> distances(num_rays, max_range);
 	std::vector<ShapesMap::Position> end_points(num_rays);
