@@ -25,8 +25,7 @@ class BeamSensorModel {
     BeamSensorModel(SensorSetings settings) : m_settings(settings) {}
 
     template <typename Measurment>
-    auto operator()(const Measurment &measured, const Measurment &expected)
-    {
+    auto operator()(const Measurment &measured, const Measurment &expected) {
         auto q = 1.0;
         auto z_pos_e = std::begin(expected);
         auto z_pos = std::begin(measured);
@@ -37,8 +36,7 @@ class BeamSensorModel {
         return q;
     }
 
-    auto operator()(const double &measured, const double &expected)
-    {
+    auto operator()(const double &measured, const double &expected) {
         auto p = m_settings.a[0] * normal_measurment(measured, expected) +
                  m_settings.a[1] * failure() + m_settings.a[2] * error(measured) +
                  m_settings.a[3] * dynamic_objects(measured, expected);
@@ -46,8 +44,7 @@ class BeamSensorModel {
     }
 
   private:
-    double normal_measurment(double z, double ze) const
-    {
+    double normal_measurment(double z, double ze) const {
         if (z > m_settings.ray_length || ze > m_settings.ray_length)
             return 0.0;
         double sigma2 = m_settings.sigma;
@@ -60,16 +57,14 @@ class BeamSensorModel {
 
     double failure() const { return 1 / m_settings.ray_length; }
 
-    double error(double z) const
-    {
+    double error(double z) const {
         if (fabs(z - m_settings.ray_length) < 0.001)
             return 1.0;
         else
             return 0.0;
     }
 
-    double dynamic_objects(double z, double ze) const
-    {
+    double dynamic_objects(double z, double ze) const {
         if (z >= ze)
             return 0.0;
         else

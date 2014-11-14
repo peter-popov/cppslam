@@ -28,10 +28,10 @@ auto fast_intersect(T length, const P &p1, const P &p2, const P &p3, const P &p4
     auto Bx = x3 - x4;
 
     // X bound box test
-    if (Ax < 0) { 
+    if (Ax < 0) {
         x1lo = x2;
         x1hi = x1;
-    } else {	
+    } else {
         x1hi = x2;
         x1lo = x1;
     }
@@ -47,7 +47,7 @@ auto fast_intersect(T length, const P &p1, const P &p2, const P &p3, const P &p4
     auto By = y3 - y4;
 
     // Y bound box test
-    if (Ay < 0) { 
+    if (Ay < 0) {
         y1lo = y2;
         y1hi = y1;
     } else {

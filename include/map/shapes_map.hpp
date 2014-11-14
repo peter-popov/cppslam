@@ -6,54 +6,49 @@
 #include <istream>
 #include <tuple>
 
-namespace pfcpp
-{
-namespace maps
-{
+namespace pfcpp {
+namespace maps {
 
+class ShapesMap {
+  public:
+    typedef double coord_t;
 
+    typedef boost::geometry::model::point<coord_t, 2, boost::geometry::cs::cartesian> Point;
+    typedef boost::geometry::model::box<Point> Box;
+    typedef boost::geometry::model::polygon<Point> Polygon;
 
-class ShapesMap
-{
-public:
-	typedef double coord_t;
+  public:
+    typedef std::tuple<coord_t, coord_t> Position;
+    typedef std::pair<Position, Position> Segment;
 
-	typedef boost::geometry::model::point<coord_t, 2, boost::geometry::cs::cartesian> Point;
-	typedef boost::geometry::model::box<Point> Box;
-	typedef boost::geometry::model::polygon<Point> Polygon;
+  public:
+    ShapesMap();
 
-public:
+    void add(Polygon &&poly);
 
-	typedef std::tuple<coord_t, coord_t> Position;
-	typedef std::pair<Position, Position> Segment;
+    void add_wkt(std::string feature);
 
-public:
-	ShapesMap();
+    Position bottom_left() const;
 
-	void add(Polygon&& poly);
+    Position top_right() const;
 
-	void add_wkt(std::string feature);
+    std::tuple<coord_t, coord_t> size() const;
 
-	Position bottom_left() const;
+    bool is_occupied(Position point) const;
 
-	Position top_right() const;
+    std::tuple<coord_t, Position> min_distance_towards(Position p, double heading,
+                                                       coord_t max_range, coord_t noise = 0);
 
-	std::tuple<coord_t, coord_t> size() const;
+    std::vector<Polygon> objects;
 
-	bool is_occupied(Position point) const;
-
-	std::tuple<coord_t, Position> min_distance_towards(Position p, double heading, coord_t max_range, coord_t noise = 0);
-
-
-	std::vector<Polygon> objects;
-private:		 
-	std::vector<Segment> segments;
-	typedef std::pair<Box, size_t> IndexItem;
-	boost::geometry::index::rtree< IndexItem, boost::geometry::index::quadratic<4> > rtree;
-	mutable std::vector<IndexItem> query_result;
-	mutable std::vector<Point> intersection_result;
-	Box bbox;
+  private:
+    std::vector<Segment> segments;
+    typedef std::pair<Box, size_t> IndexItem;
+    boost::geometry::index::rtree<IndexItem, boost::geometry::index::quadratic<4> > rtree;
+    mutable std::vector<IndexItem> query_result;
+    mutable std::vector<Point> intersection_result;
+    Box bbox;
 };
 
-} //maps
-} //pfcpp
+} // maps
+} // pfcpp

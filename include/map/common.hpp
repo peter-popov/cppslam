@@ -1,16 +1,10 @@
 #pragma once
 
+namespace pfcpp {
 
-namespace pfcpp
-{
-
-
-struct Pose
-{
-	double x;
-	double y;
-	double heading;	
+struct Pose {
+    double x;
+    double y;
+    double heading;
 };
-
-
 }
