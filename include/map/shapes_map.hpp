@@ -32,7 +32,7 @@ public:
 
 	void add(Polygon&& poly);
 
-	void add_wtk(std::string feature);
+	void add_wkt(std::string feature);
 
 	Position bottom_left() const;
 

@@ -101,7 +101,7 @@ auto load_scene(std::string wkt_csv_path)
 		auto pos_a = line.find_first_of('\"') + 1;
 		auto pos_b = line.find_last_of('\"');
 		if ( pos_b > pos_a )
-			map.add_wtk(line.substr(pos_a, pos_b - pos_a));
+			map.add_wkt(line.substr(pos_a, pos_b - pos_a));
 	}
 	
 	return map;

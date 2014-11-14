@@ -15,22 +15,16 @@ namespace pfcpp
  * Implementation of the Particle Filter
  */
 template<typename State>
-struct ParticleFilter
-{
+struct ParticleFilter {
 	ParticleFilter() {}
-	ParticleFilter(std::vector<State> states)
-	{
+	ParticleFilter(std::vector<State> states) {
 		for (auto& s: states)
-		{
 			particles.push_back({s,1.0});
-		}
     }
 
 	template<typename SensorUpdate, typename MotionUpdate>
-	void operator()(SensorUpdate sensor_update, const MotionUpdate& motion_update)
-	{
-		for(auto& p: particles) 
-		{
+	void operator()(SensorUpdate sensor_update, const MotionUpdate& motion_update) {
+		for(auto& p: particles) {
 			p.state = motion_update(p.state);	
 			p.weight = sensor_update(p.state);
 		}

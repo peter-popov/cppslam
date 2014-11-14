@@ -36,30 +36,33 @@ public:
 	: a(std::forward<std::array<double, 6>>(params)) {		
 	}
 
-	template<typename Pose, typename Control>
-	Pose operator()(const Pose& pose, const Control& control) {		
-		auto v = get_velocity(control);
-		auto w = get_rotation(control);
-		auto t = get_time(control);
-		// Noisy control
-		auto noisy_v = v + noise(a[0] * v + a[1] * w);
-		auto noisy_w = w + noise(a[2] * v + a[3] * w);
-		auto gm = noise(a[4] * v + a[5] * w);
-		auto dt = get_time(control);
+        template <typename Pose, typename Control>
+        Pose operator()(const Pose &pose, const Control &control) {
+          auto v = get_velocity(control);
+          auto w = get_rotation(control);
+          auto t = get_time(control);
+          // Noisy control
+          auto noisy_v = v + noise(a[0] * v + a[1] * w);
+          auto noisy_w = w + noise(a[2] * v + a[3] * w);
+          auto gm = noise(a[4] * v + a[5] * w);
+          auto dt = get_time(control);
 
-		auto heading = get_heading(pose);
-		auto dv_dw = noisy_v / noisy_w;			
-		if (std::isnormal(dv_dw)) {
-			return { get_x(pose) - dt * dv_dw * (std::sin(heading) - std::sin(heading + noisy_w * dt)),
-					 get_y(pose) + dt * dv_dw * (std::cos(heading) - std::cos(heading + noisy_w * dt)),
-					 normal_angle(heading + w * dt + gm) };	
-		}
-		else {
-			return { get_x(pose) + dt * noisy_v * std::cos(heading),
-					 get_y(pose) + dt * noisy_v * std::sin(heading),
-					 normal_angle(heading + w * dt + gm) };	
-		}
-	} 
+          auto heading = get_heading(pose);
+          auto dv_dw = noisy_v / noisy_w;
+          if (std::isnormal(dv_dw)) {
+            return {
+              get_x(pose) - dt * dv_dw * (std::sin(heading) -
+                                          std::sin(heading + noisy_w * dt)),
+              get_y(pose) + dt * dv_dw * (std::cos(heading) -
+                                          std::cos(heading + noisy_w * dt)),
+              normal_angle(heading + w * dt + gm)
+            };
+          } else {
+            return { get_x(pose) + dt * noisy_v * std::cos(heading),
+                     get_y(pose) + dt * noisy_v * std::sin(heading),
+                     normal_angle(heading + w * dt + gm) };
+          }
+        }
 
 private:
 	///noise params

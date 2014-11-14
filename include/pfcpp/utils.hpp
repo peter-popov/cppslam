@@ -8,22 +8,18 @@ namespace pfcpp
 static const double Pi = 3.14159265359;
 
 template<typename T>
-class GaussianNoise
-{
+class GaussianNoise {
 public:
 	GaussianNoise(T sigma = 1.0)
 	: gen(std::random_device{}())
-	, distr(0, sigma)
-	{
+	, distr(0, sigma) {
 	}
 
-	T operator()()
-	{
+	T operator()() {
 		return static_cast<T>(distr(gen));	
 	}
 
-	T operator()(T other_sigma)
-	{
+	T operator()(T other_sigma) {
 		return static_cast<T>(distr(gen, typename decltype(distr)::param_type(0., other_sigma)));
 	}
 
@@ -35,17 +31,14 @@ private:
 
 
 template<typename T>
-class Uniform
-{
+class Uniform {
 public:
 	Uniform(T a = 0.0, T b = 1.0)
 	: gen(std::random_device{}())
-	, distr(a, b)
-	{
+	, distr(a, b) {
 	}
 
-	T operator()()
-	{
+	T operator()() {
 		return static_cast<T>(distr(gen));	
 	}
 
@@ -56,34 +49,31 @@ private:
 
 
 template<typename T>
-class MultimodalDistribution
-{
+class MultimodalDistribution {
 public:	
 	template<typename I, typename WeightFunction>
-	MultimodalDistribution(I from, I to, WeightFunction weight)
-	{
+	MultimodalDistribution(I from, I to, WeightFunction weight) {
 		acc.reserve(std::distance(from, to));
 		T total = 0;
-		for(; from != to; ++from)
-		{
+		for(; from != to; ++from) {
 			total += weight(*from);
 			acc.push_back(total);
 		}
 		last_iter = acc.begin();
 	}
 
-	T total() const { return acc.back(); }
+	T total() const { 
+		return acc.back(); 
+	}
 
-	size_t draw(T rnd) const
-	{
+	size_t draw(T rnd) const {
 		auto pos = std::lower_bound(std::begin(acc), std::end(acc), rnd);
 		if (pos == std::end(acc))
 			return acc.size() - 1;
 		return std::distance(std::begin(acc), pos);
 	}
 
-	size_t draw_next(T rnd) const
-	{
+	size_t draw_next(T rnd) const {
 		last_iter = std::lower_bound(last_iter, std::end(acc), rnd);
 		if (last_iter == std::end(acc))
 			return acc.size() - 1;
@@ -97,8 +87,7 @@ private:
 
 
 template<typename I, typename Setter, typename Getter>
-void normalize(I start, I end, Setter set, Getter get)
-{
+void normalize(I start, I end, Setter set, Getter get) {
 	decltype(set(*start)) total = 0;
 	for (auto p = start; p != end; ++p)
 		total += get(*p);
@@ -107,8 +96,7 @@ void normalize(I start, I end, Setter set, Getter get)
 }
 
 template<typename I>
-void normalize(I start, I end, decltype(std::declval<I>()->weight) dummy = 0)
-{
+void normalize(I start, I end, decltype(std::declval<I>()->weight) dummy = 0) {
 	decltype(std::declval<I>()->weight) total = 0;
 	for (auto p = start; p != end; ++p)
 		total += p->weight;

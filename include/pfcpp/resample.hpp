@@ -7,8 +7,7 @@ namespace pfcpp
 {
 
 template<typename P>
-auto get_weight(const P& p) -> decltype(P::weight)
-{
+auto get_weight(const P& p) -> decltype(P::weight) {
 	return p.weight;
 }
 
