@@ -95,6 +95,7 @@ ApplicationWindow {
                        maximumValue: 20000
                        minimumValue: 10
                        stepSize: 100
+                       value: 5000
                     }
                     Binding { target: simulation; property: "mcl.numberOfParticles"; value: particlesCount.value }
 
@@ -143,14 +144,27 @@ ApplicationWindow {
                     onUpdated: simulationCanvas.requestPaint()
                 }
 
+                onWidthChanged: {
+                    var ctx = getContext('2d');
+                    ctx.reset();
+                    requestPaint();   
+                }
+                onHeightChanged: {
+                    var ctx = getContext('2d');
+                    ctx.reset();
+                    requestPaint();   
+                }
+
+
                 onPaint: {
                     var ctx = simulationCanvas.getContext('2d');
                     ctx.save();
-                    ctx.clearRect(0, 0, simulationCanvas.width, simulationCanvas.height);                
+                    
+                    ctx.clearRect(0, 0,canvasSize.width, canvasSize.height);                
 
                     ctx.scale(mapView.zoom, mapView.zoom);                    
-                    ctx.translate(mapView.translate.x, mapView.translate.y);
-
+                    ctx.translate(mapView.translate.x, mapView.translate.y)                    
+                        
                     var particle_size = 2 / mapView.zoom;
                         
                     for (var i = 0; i < simulation.particles.length; i++) {
@@ -190,7 +204,6 @@ ApplicationWindow {
                 id: mapView
                 anchors.fill: parent        
                 source: "wkt_from_svg.txt"
-                //!source: "indoor_1.csv"
                 transformOrigin : "TopLeft"             
             }
         }
