@@ -53,18 +53,10 @@ class Pose : public QObject {
     Q_PROPERTY(QPointF position READ position WRITE setPosition)
     Q_PROPERTY(double orientation READ orientation WRITE setOrientation)
   public:
-    Pose(QPointF p, double o) : m_position(p), m_orientation(o) {}
+    
     Pose() : Pose({0, 0}, 0.0) {}
-    template <typename T> Pose(std::initializer_list<T> l) {
-        auto i = std::begin(l);
-        if (i != std::end(l))
-            m_position.setX(*i);
-        if (++i != std::end(l))
-            m_position.setY(*i);
-        if (++i != std::end(l))
-            m_orientation = *i;
-    }
-
+    Pose(QPointF p, double o) : m_position(p), m_orientation(o) {}    
+    Pose(double x, double y, double o) : m_position(x, y), m_orientation(o) {}        
     Pose(const Pose &other) : Pose(other.position(), other.orientation()) {}
 
     const Pose &operator=(const Pose &other) {

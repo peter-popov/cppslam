@@ -9,25 +9,17 @@
 
 	"settings":
     {
-    	"sublimeclang_additional_language_options":
-    	{
-	        // For example, you can use "c++": ["-std=c++11"] to enable C++11 features.
-	        "c++" : 
-	        [
-	        	"-std=c++1y",
-	        	"-I/usr/include/qt5",
-	        	"-I/usr/include/qt5/QtCore",
-	        	"-I/usr/include/qt5/QtWidgets",
-	        	"-I/usr/include/qt5/QtQml",
-	        	"-I${project_path}/include"
-	        ]
-    	},
-
-    	"sublimeclang_options":
-		[			
-			"-ferror-limit=10",
-			"-fPIC",
-	        "-I${project_path}/include"
-		]
-    }	
+        "sublimeclang_options":
+        [
+        	"-std=c++1y",
+        	"-I/usr/include/x86_64-linux-gnu/qt5",
+        	"-I/usr/include/x86_64-linux-gnu/qt5/QtWidgets",
+        	"-I/usr/include/x86_64-linux-gnu/qt5/QtCore",
+        	"-I/usr/include/x86_64-linux-gnu/qt5/QtQml",
+        	"-I/${project_path}/include",
+        	"-ferror-limit=10",
+			"-fPIC"
+        ]
+	}
+    	
 }
